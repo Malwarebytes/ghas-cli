@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "security-ghash-cli"
+version = "0.0.1"
+description = "Python3 command line interface to interact with Github Advanced Security."
+authors = ["jboursier <jboursier@malwarebytes.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://malwarebytes.com"
+repository = "https://github.com/Malwarebytes/Security-ghash-cli"
+keywords = ["security", "cli", "github", "utility"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Topic :: Utilities"
+]
+include = ["src/cli.py"]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+click = ">=8"
+requests = "*"
+colorama = "*"
+configparser = "*"
+python-magic = "*"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+ghas-cli = 'src.cli:main'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

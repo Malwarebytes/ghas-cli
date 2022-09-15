@@ -12,8 +12,6 @@ try:
     import click
     import requests
     import json
-    import time
-    import typing
     from typing import List, Dict, Any
     from datetime import datetime
 except ImportError:
