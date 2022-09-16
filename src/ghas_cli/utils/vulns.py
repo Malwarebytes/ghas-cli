@@ -41,9 +41,17 @@ def get_codeql_alerts_repo(
                 break
 
             for a in alerts.json():
-                alerts_repo.append(a)
+                if not a:
+                    continue
 
-            if [] == alerts.json():
+                alert_summary = {}
+                alert_summary["number"] = a["number"]
+                alert_summary["created_at"] = a["created_at"]
+                alert_summary["state"] = a["state"]
+                alert_summary["severity"] = a["rule"]["severity"]
+                alerts_repo.append(alert_summary)
+
+            if not alerts.json():
                 break
 
             page += 1
