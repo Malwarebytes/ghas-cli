@@ -21,12 +21,13 @@ classifiers = [
 include = ["src/cli.py"]
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.7,<4"
 click = ">=8"
 requests = "*"
 colorama = "*"
 configparser = "*"
 python-magic = "*"
+urllib3 = "^1.26.12"
 
 [tool.poetry.dev-dependencies]
 
