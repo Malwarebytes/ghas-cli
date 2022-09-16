@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+ghas-cli-complete.sh
+checksums.sha512
+checksums.sha512.asc
