@@ -10,9 +10,7 @@ __status__ = "Development"
 
 try:
     import click
-    import requests
-    import json
-    from typing import List, Dict, Any
+    from typing import Dict
     from datetime import datetime
 except ImportError:
     import sys
@@ -20,10 +18,7 @@ except ImportError:
     print("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from click.exceptions import ClickException
-from requests.exceptions import Timeout
-
-from ghas_cli.utils import repositories, network, vulns
+from ghas_cli.utils import repositories, vulns
 
 
 def main() -> None:

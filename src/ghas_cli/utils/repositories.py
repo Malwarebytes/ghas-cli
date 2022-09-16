@@ -3,8 +3,6 @@
 
 from typing import List
 import requests
-import json
-
 from . import network
 
 
