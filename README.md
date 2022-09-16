@@ -1,7 +1,8 @@
 # Security-ghas-cli
 
-CLI utility to interact with GHAS.
+[![CodeQL](https://github.com/Malwarebytes/Security-ghas-cli/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Malwarebytes/Security-ghas-cli/actions/workflows/codeql-analysis.yml)
 
+CLI utility to interact with GHAS.
 
 ## Installation
 
