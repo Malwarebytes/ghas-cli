@@ -10,7 +10,6 @@ __status__ = "Development"
 
 try:
     import click
-    import requests
     from typing import Dict
     from datetime import datetime
 except ImportError:
