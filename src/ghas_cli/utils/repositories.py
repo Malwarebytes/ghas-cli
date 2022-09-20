@@ -82,6 +82,12 @@ def get_org_repositories(
             repo.archived = r["archived"]
             repo.disabled = r["disabled"]
             repo.updated_at = r["updated_at"]
+
+            try:
+                repo.ghas = r["security_and_analysis"]["advanced_security"]["status"]
+            except Exception as e:
+                repo.ghas = False
+
             try:
                 repo.secret_scanner = r["security_and_analysis"]["advanced_security"][
                     "secret_scanning"
