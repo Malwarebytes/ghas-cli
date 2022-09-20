@@ -77,7 +77,7 @@ def get_org_repositories(
             repo.default_branch = r["default_branch"]
             try:
                 repo.license = r["license"]["spdx_id"]
-            except:
+            except Exception:
                 repo.license = None
             repo.archived = r["archived"]
             repo.disabled = r["disabled"]
