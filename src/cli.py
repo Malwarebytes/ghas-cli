@@ -220,6 +220,7 @@ def repositories_list(
                     "archived": r.archived,
                     "disabled": r.disabled,
                     "updated_at": r.updated_at,
+                    "ghas": r.ghas,
                     "secret_scanner": r.secret_scanner,
                     "secret_push_prot": r.secret_push_prot,
                     "dependabot": r.dependabot,
