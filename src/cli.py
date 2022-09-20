@@ -142,6 +142,26 @@ def repositories_cli() -> None:
     type=bool,
     default=False,
 )
+@click.option(
+    "-f",
+    "--format",
+    prompt="Output format",
+    type=click.Choice(
+        ["human", "ghas", "json"],
+        case_sensitive=False,
+    ),
+    default="human",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
 @click.option("-o", "--organization", prompt="Organization name", type=str)
 @click.option(
     "-t",
@@ -160,11 +180,12 @@ def repositories_list(
     license: str,
     archived: bool,
     disabled: bool,
+    format: str,
     organization: str,
     token: str,
 ) -> None:
     """List repositories"""
-    for r in repositories.get_org_repositories(
+    res = repositories.get_org_repositories(
         status,
         organization,
         token,
@@ -173,8 +194,40 @@ def repositories_list(
         license,
         archived,
         disabled,
-    ):
-        click.echo(r.name)
+    )
+
+    if "human" == format:
+        for r in res:
+            click.echo(r.name)
+    elif "ghas" == format:
+        repos = []
+        for r in res:
+            repos.append({"repo": f"{r.orga}/{r.name}"})
+        click.echo([{"login": organization, "repos": repos}])
+    elif "json" == format:
+        repos = []
+        for r in res:
+            repos.append(
+                {
+                    "name": r.name,
+                    "orga": r.orga,
+                    "owner": r.owner,
+                    "url": r.url,
+                    "description": r.description,
+                    "language": r.language,
+                    "default_branch": r.default_branch,
+                    "license": r.license,
+                    "archived": r.archived,
+                    "disabled": r.disabled,
+                    "updated_at": r.updated_at,
+                    "secret_scanner": r.secret_scanner,
+                    "secret_push_prot": r.secret_push_prot,
+                    "dependabot": r.dependabot,
+                    "dependabot_alerts": r.dependabot_alerts,
+                    "codeql": r.codeql,
+                }
+            )
+        click.echo(repos)
 
 
 @cli.group()
