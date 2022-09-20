@@ -5,7 +5,6 @@ from typing import Dict, List
 import requests
 
 from . import network
-from . import repositories
 
 
 def get_codeql_alerts_repo(
