@@ -40,3 +40,8 @@ def get_org_repositories(status: str, organization: str, token: str) -> List:
         page += 1
 
     return repositories
+
+
+def update_repository():
+    # https://docs.github.com/en/enterprise-cloud@latest/rest/repos/repos#update-a-repository
+    return None
