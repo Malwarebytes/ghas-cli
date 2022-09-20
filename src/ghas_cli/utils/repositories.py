@@ -82,10 +82,23 @@ def get_org_repositories(
             repo.archived = r["archived"]
             repo.disabled = r["disabled"]
             repo.updated_at = r["updated_at"]
-            repo.secret_scanner = False
-            repo.secret_push_prot = False
+            try:
+                repo.secret_scanner = r["security_and_analysis"]["advanced_security"][
+                    "secret_scanning"
+                ]["status"]
+            except Exception as e:
+                repo.secret_scanner = False
+
+            try:
+                repo.secret_push_prot = r["security_and_analysis"]["advanced_security"][
+                    "secret_scanning_push_protection"
+                ]["status"]
+            except Exception as e:
+                repo.secret_push_prot = False
             repo.dependabot = False
-            repo.dependabot_alerts = False
+            repo.dependabot_alerts = check_dependabot_alerts_enabled(
+                token, repo.orga, repo.name
+            )
             repo.codeql = False
 
             if language != "" and repo.language != language:
@@ -104,3 +117,24 @@ def get_org_repositories(
         page += 1
 
     return repos_list
+
+
+def check_dependabot_alerts_enabled(
+    token: str, organization: str, repository_name: str
+) -> bool:
+
+    headers = {
+        "accept": "application/vnd.github+json",
+        "authorization": f"Bearer {token}",
+        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
+    }
+
+    status = requests.get(
+        url=f"https://api.github.com/orgs/{organization}/repos/vulnerability-alerts",
+        headers=headers,
+    )
+
+    if status.status_code != 204:
+        return False
+    else:
+        return True
