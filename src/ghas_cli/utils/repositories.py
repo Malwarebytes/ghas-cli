@@ -90,6 +90,50 @@ class Repository:
             self.dependabot_alerts = False
         self.codeql = False
 
+    def __str__(self):
+        return f"""[{self.name}]
+        * Organization: {self.orga}
+        * Owner: {self.owner}
+        * Url: {self.url}
+        * Description: {self.description}
+        * Language: {self.language}
+        * Default branch: {self.default_branch}
+        * License: {self.license}
+        * Archived: {self.archived}
+        * Disabled: {self.disabled}
+        * Last updated at: {self.updated_at}
+        * GHAS: {self.ghas}
+        * Secret Scanner: {self.secret_scanner}
+        * Secret Scanner Push Protection: {self.secret_push_prot}
+        * Dependabot: {self.dependabot}
+        * Dependabot alerts: {self.dependabot_alerts}
+        * CodeQL: {self.codeql}
+        """
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "orga": self.orga,
+            "owner": self.owner,
+            "url": self.url,
+            "description": self.description,
+            "language": self.language,
+            "default_branch": self.default_branch,
+            "license": self.license,
+            "archived": self.archived,
+            "disabled": self.disabled,
+            "updated_at": self.updated_at,
+            "ghas": self.ghas,
+            "secret_scanner": self.secret_scanner,
+            "secret_push_prot": self.secret_push_prot,
+            "dependabot": self.dependabot,
+            "dependabot_alerts": self.dependabot_alerts,
+            "codeql": self.codeql,
+        }
+
+    def to_ghas(self):
+        return {"repo": f"{self.orga}/{self.name}"}
+
 
 def get_org_repositories(
     status: str,

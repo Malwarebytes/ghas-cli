@@ -208,36 +208,16 @@ def repositories_list(
 
     if "human" == format:
         for r in res:
-            click.echo(r.name)
+            click.echo(r)
     elif "ghas" == format:
         repos = []
         for r in res:
-            repos.append({"repo": f"{r.orga}/{r.name}"})
+            repos.append(r.to_ghas())
         click.echo([{"login": organization, "repos": repos}])
     elif "json" == format:
         repos = []
         for r in res:
-            repos.append(
-                {
-                    "name": r.name,
-                    "orga": r.orga,
-                    "owner": r.owner,
-                    "url": r.url,
-                    "description": r.description,
-                    "language": r.language,
-                    "default_branch": r.default_branch,
-                    "license": r.license,
-                    "archived": r.archived,
-                    "disabled": r.disabled,
-                    "updated_at": r.updated_at,
-                    "ghas": r.ghas,
-                    "secret_scanner": r.secret_scanner,
-                    "secret_push_prot": r.secret_push_prot,
-                    "dependabot": r.dependabot,
-                    "dependabot_alerts": r.dependabot_alerts,
-                    "codeql": r.codeql,
-                }
-            )
+            repos.append(r.to_json())
         click.echo(repos)
 
 
@@ -287,7 +267,8 @@ def teams_get_repositories(organization: str, team: str, token: str) -> None:
     team_repos = teams.get_repositories(
         team_slug=team, organization=organization, token=token
     )
-    click.echo(f"{team}: {team_repos}")
+    for repo in team_repos:
+        click.echo(f"{team}: {repo}")
 
 
 ###########
