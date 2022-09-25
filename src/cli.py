@@ -253,8 +253,20 @@ def teams_cli() -> None:
 
 
 @teams_cli.command("list")
-def teams_list() -> None:
-    pass
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+def teams_list(organization: str, token: str) -> None:
+    """List team for a specific organization"""
+    click.echo(teams.list(organization=organization, token=token))
 
 
 @teams_cli.command("repositories")
@@ -271,11 +283,11 @@ def teams_list() -> None:
     show_envvar=True,
 )
 def teams_get_repositories(organization: str, team: str, token: str) -> None:
+    """List repositories for a specific team"""
     team_repos = teams.get_repositories(
         team_slug=team, organization=organization, token=token
     )
     click.echo(f"{team}: {team_repos}")
-    pass
 
 
 ###########
