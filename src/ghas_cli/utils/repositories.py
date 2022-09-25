@@ -216,3 +216,80 @@ def check_dependabot_alerts_enabled(
         return False
     else:
         return True
+
+
+def enable_secret_scanner(organization: str, token: str, repository: str) -> bool:
+    headers = {
+        "accept": "application/vnd.github+json",
+        "authorization": f"Bearer {token}",
+        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
+    }
+
+    payload = {
+        "security_and_analysis": {
+            "advanced_security": {
+                "status": "enabled",
+            },
+            "secret_scanning": {"status": "enabled"},
+        }
+    }
+
+    status = requests.patch(
+        url=f"https://api.github.com/repos/{organization}/{repository}",
+        headers=headers,
+        json=payload,
+    )
+
+    if status.status_code != 200:
+        return False
+    else:
+        return True
+
+
+def enable_secret_scanner_push_protection(
+    organization: str, token: str, repository: str
+) -> bool:
+    headers = {
+        "accept": "application/vnd.github+json",
+        "authorization": f"Bearer {token}",
+        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
+    }
+
+    payload = {
+        "security_and_analysis": {
+            "advanced_security": {
+                "status": "enabled",
+            },
+            "secret_scanning": {"status": "enabled"},
+            "secret_scanning_push_protection": {"status": "enabled"},
+        }
+    }
+
+    status = requests.patch(
+        url=f"https://api.github.com/repos/{organization}/{repository}",
+        headers=headers,
+        json=payload,
+    )
+
+    if status.status_code != 200:
+        return False
+    else:
+        return True
+
+
+def enable_dependabot(organization: str, token: str, repository: str) -> bool:
+    headers = {
+        "accept": "application/vnd.github+json",
+        "authorization": f"Bearer {token}",
+        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
+    }
+
+    status = requests.put(
+        url=f"https://api.github.com/repos/{organization}/{repository}/vulnerability-alerts",
+        headers=headers,
+    )
+
+    if status.status_code != 204:
+        return False
+    else:
+        return True
