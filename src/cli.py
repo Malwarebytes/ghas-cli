@@ -231,6 +231,36 @@ def repositories_list(
         click.echo(repos)
 
 
+@repositories_cli.command("enable_ss_protection")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def repositories_enable_ss(
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Enable secret scanner on a repository"""
+    click.echo(
+        repositories.enable_secret_scanner_push_protection(
+            organization, token, repository
+        )
+    )
+
+
 @repositories_cli.command("enable_ss")
 @click.option(
     "-r",
