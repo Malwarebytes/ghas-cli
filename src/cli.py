@@ -18,7 +18,7 @@ except ImportError:
     print("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from ghas_cli.utils import repositories, vulns
+from ghas_cli.utils import repositories, vulns, teams
 
 
 def main() -> None:
@@ -34,6 +34,11 @@ def cli() -> None:
 
     Get help: `@jboursier` on Slack
     """
+
+
+##########
+# CodeQL #
+##########
 
 
 @cli.group()
@@ -90,7 +95,12 @@ def vulns_alerts_list(repos: str, organization: str, status: str, token: str) ->
     return repositories_alerts
 
 
-@cli.group()
+################
+# Repositories #
+################
+
+
+@cli.group(name="repositories")
 def repositories_cli() -> None:
     """Manage repositories"""
     pass
@@ -231,10 +241,57 @@ def repositories_list(
         click.echo(repos)
 
 
+#########
+# Teams #
+#########
+
+
+@cli.group(name="teams")
+def teams_cli() -> None:
+    """Manage Teams"""
+    pass
+
+
+@teams_cli.command("list")
+def teams_list() -> None:
+    pass
+
+
+@teams_cli.command("repositories")
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option("-s", "--team", prompt="Team slug", type=str)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+def teams_get_repositories(organization: str, team: str, token: str) -> None:
+    team_repos = teams.get_repositories(
+        team_slug=team, organization=organization, token=token
+    )
+    click.echo(f"{team}: {team_repos}")
+    pass
+
+
+###########
+# Secrets #
+###########
+
+
 @cli.group()
 def secret_alerts() -> None:
     """Manage Secret Scanner alerts"""
     pass
+
+
+##############
+# Dependabot #
+##############
 
 
 @cli.group()
@@ -243,9 +300,14 @@ def dependabot_alerts() -> None:
     pass
 
 
+###########
+# Actions #
+###########
+
+
 @cli.group()
 def actions() -> None:
-    """Manage vulnerability alerts"""
+    """Manage Actions and their workflows"""
     pass
 
 
