@@ -45,43 +45,49 @@ class Repository:
         self.dependabot_alerts: bool = dependabot_alerts
         self.codeql: bool = codeql
 
-    def load_json(self, obj):
+    def load_json(self, obj, token=None):
         """Load and parse a repository from an API json object"""
 
-        self.name = r["name"]
-        self.orga = organization
-        self.owner = r["owner"]["login"]
-        self.url = r["html_url"]
-        self.description = r["description"]
-        self.language = r["language"]
-        self.default_branch = r["default_branch"]
+        self.name = obj["name"]
+        if obj["owner"]["type"] == "Organization":
+            self.orga = obj["owner"]["login"]
+        else:
+            self.orga = ""
+        self.owner = obj["owner"]["login"]
+        self.url = obj["html_url"]
+        self.description = obj["description"]
+        self.language = obj["language"]
+        self.default_branch = obj["default_branch"]
         try:
-            self.license = r["license"]["spdx_id"]
+            self.license = obj["license"]["spdx_id"]
         except Exception:
             self.license = None
-        self.archived = r["archived"]
-        self.disabled = r["disabled"]
-        self.updated_at = r["updated_at"]
+        self.archived = obj["archived"]
+        self.disabled = obj["disabled"]
+        self.updated_at = obj["updated_at"]
         try:
-            self.ghas = r["security_and_analysis"]["advanced_security"]["status"]
+            self.ghas = obj["security_and_analysis"]["advanced_security"]["status"]
         except Exception as e:
             self.ghas = False
         try:
-            self.secret_scanner = r["security_and_analysis"]["advanced_security"][
+            self.secret_scanner = obj["security_and_analysis"]["advanced_security"][
                 "secret_scanning"
             ]["status"]
         except Exception as e:
             self.secret_scanner = False
         try:
-            self.secret_push_prot = r["security_and_analysis"]["advanced_security"][
+            self.secret_push_prot = obj["security_and_analysis"]["advanced_security"][
                 "secret_scanning_push_protection"
             ]["status"]
         except Exception as e:
             self.secret_push_prot = False
         self.dependabot = False
-        self.dependabot_alerts = check_dependabot_alerts_enabled(
-            token, repo.orga, repo.name
-        )
+        if token:
+            self.dependabot_alerts = check_dependabot_alerts_enabled(
+                token, self.orga, self.name
+            )
+        else:
+            self.dependabot_alerts = False
         self.codeql = False
 
 
@@ -127,7 +133,7 @@ def get_org_repositories(
         for r in repos.json():
 
             repo = Repository()
-            repo.load_json(r)
+            repo.load_json(r, token=token)
 
             if language != "" and repo.language != language:
                 continue

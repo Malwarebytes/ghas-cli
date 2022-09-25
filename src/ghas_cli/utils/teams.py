@@ -36,9 +36,8 @@ def get_repositories(team_slug: str, organization: str, token: str) -> List:
             break
 
         for r in repos.json():
-
             repo = repositories.Repository()
-            repo.load_json(r)
+            repo.load_json(r, token=token)
             repos_list.append(repo)
 
         page += 1
