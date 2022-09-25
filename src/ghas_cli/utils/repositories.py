@@ -203,3 +203,21 @@ def enable_secret_scanner_push_protection(
         return False
     else:
         return True
+
+
+def enable_dependabot(organization: str, token: str, repository: str) -> bool:
+    headers = {
+        "accept": "application/vnd.github+json",
+        "authorization": f"Bearer {token}",
+        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
+    }
+
+    status = requests.put(
+        url=f"https://api.github.com/repos/{organization}/{repository}/vulnerability-alerts",
+        headers=headers,
+    )
+
+    if status.status_code != 204:
+        return False
+    else:
+        return True
