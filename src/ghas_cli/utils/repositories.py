@@ -278,3 +278,79 @@ def enable_dependabot(organization: str, token: str, repository: str) -> bool:
         return False
     else:
         return True
+
+
+def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
+    """
+    1. Retrieve the repository main language. Select the `codeql-analysis.yml` file for that language.
+    2. Create a branch
+    3. Push a .github/workflows/codeql-analysis.yml to the repository on that branch
+    3. Create an associated issue
+    """
+    headers = network.get_github_headers(token)
+
+    # Create a branch
+    # https://docs.github.com/en/enterprise-cloud@latest/rest/git/refs#create-a-reference
+    branch_resp = requests.get(
+        url=f"https://api.github.com/repos/{organization}/{repository}/git/refs/heads",
+        headers=headers,
+    )
+    if branch_resp.status_code != 200:
+        return False
+
+    refs = branch_resp.json()
+    sha1 = ""
+    for ref in refs:
+        if (
+            ref["ref"] == "refs/heads/main"
+        ):  # TODO: fetch the default branch first and adjust dynamically
+            sha1 = ref["object"]["sha"]
+
+    if sha1 == "":
+        return False
+
+    payload = {
+        "ref": "refs/heads/jboursier-codeql-enable",
+        "sha": sha1,
+    }
+
+    branch_resp = requests.post(
+        url=f"https://api.github.com/repos/{organization}/{repository}/git/refs",
+        headers=headers,
+        json=payload,
+    )
+    if branch_resp.status_code != 201:
+        return False
+
+    # Create commit
+    payload = {
+        "message": "Enable CodeQL analysis",
+        "content": "bXkgbmV3IGZpbGUgY29udGVudHM=",
+        "branch": "jboursier-codeql-enable",
+    }
+
+    commit_resp = requests.put(
+        url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis.yml",
+        headers=headers,
+        json=payload,
+    )
+    if commit_resp.status_code != 201:
+        return False
+
+    # Create PR
+    payload = {
+        "title": "Enable CodeQL analysis",
+        "body": "Please pull these awesome changes in!",
+        "head": "jboursier-codeql-enable",
+        "base": "main",  # TODO: fetch the default branch first and adjust dynamically
+    }
+
+    pr_resp = requests.post(
+        url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
+        headers=headers,
+        json=payload,
+    )
+    if pr_resp.status_code != 201:
+        return False
+
+    return True
