@@ -18,7 +18,7 @@ except ImportError:
     print("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from ghas_cli.utils import repositories, vulns, teams
+from ghas_cli.utils import repositories, vulns, teams, issues
 
 
 def main() -> None:
@@ -341,6 +341,61 @@ def teams_get_repositories(organization: str, team: str, token: str) -> None:
     )
     for repo in team_repos:
         click.echo(f"{team}: {repo}")
+
+
+##########
+# Issues #
+##########
+
+
+@cli.group(name="issues")
+def issues_cli() -> None:
+    """Manage issues"""
+    pass
+
+
+@issues_cli.command("create")
+@click.option(
+    "-n",
+    "--title",
+    prompt="Issue title",
+)
+@click.argument("issue_markdown_template", type=click.File("r"))
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def issues_create(
+    title: str,
+    issue_markdown_template: str,
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Create an issue on a repository"""
+    content = issue_markdown_template.read()
+
+    issue = issues.create(
+        title=title,
+        content=content,
+        repository=repository,
+        organization=organization,
+        token=token,
+    )
+
+    click.echo(issue)
 
 
 ###########
