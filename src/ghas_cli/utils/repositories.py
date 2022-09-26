@@ -315,7 +315,7 @@ def get_languages(
         headers=headers,
     )
     if languages.status_code != 200:
-        return False
+        return []
 
     lang = []
     for l in languages.json():
