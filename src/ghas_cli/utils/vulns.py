@@ -12,11 +12,7 @@ def get_codeql_alerts_repo(
 ) -> Dict:
     """Get CodeQL alerts for one or several repositories"""
 
-    headers = {
-        "accept": "application/vnd.github+json",
-        "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
-    }
+    headers = network.get_github_headers(token)
 
     repositories_alerts = {}
 

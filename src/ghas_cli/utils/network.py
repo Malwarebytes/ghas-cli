@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 
-from typing import Any
+from typing import Any, Dict
+
+
+def get_github_headers(token: str) -> Dict:
+    return {
+        "accept": "application/vnd.github+json",
+        "authorization": f"Bearer {token}",
+        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
+    }
 
 
 def check_rate_limit(response: Any) -> bool:

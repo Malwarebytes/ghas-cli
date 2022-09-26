@@ -147,11 +147,7 @@ def get_org_repositories(
 ) -> List:
     page = 1
 
-    headers = {
-        "accept": "application/vnd.github+json",
-        "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
-    }
+    headers = network.get_github_headers(token)
     while True:
         params = {
             "type": f"{status}",
@@ -201,11 +197,7 @@ def check_dependabot_alerts_enabled(
     token: str, organization: str, repository_name: str
 ) -> bool:
 
-    headers = {
-        "accept": "application/vnd.github+json",
-        "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
-    }
+    headers = network.get_github_headers(token)
 
     status = requests.get(
         url=f"https://api.github.com/orgs/{organization}/repos/vulnerability-alerts",
@@ -219,11 +211,7 @@ def check_dependabot_alerts_enabled(
 
 
 def enable_secret_scanner(organization: str, token: str, repository: str) -> bool:
-    headers = {
-        "accept": "application/vnd.github+json",
-        "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
-    }
+    headers = network.get_github_headers(token)
 
     payload = {
         "security_and_analysis": {
@@ -249,11 +237,7 @@ def enable_secret_scanner(organization: str, token: str, repository: str) -> boo
 def enable_secret_scanner_push_protection(
     organization: str, token: str, repository: str
 ) -> bool:
-    headers = {
-        "accept": "application/vnd.github+json",
-        "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
-    }
+    headers = network.get_github_headers(token)
 
     payload = {
         "security_and_analysis": {
@@ -278,11 +262,7 @@ def enable_secret_scanner_push_protection(
 
 
 def enable_dependabot(organization: str, token: str, repository: str) -> bool:
-    headers = {
-        "accept": "application/vnd.github+json",
-        "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
-    }
+    headers = network.get_github_headers(token)
 
     status = requests.put(
         url=f"https://api.github.com/repos/{organization}/{repository}/vulnerability-alerts",
