@@ -264,12 +264,17 @@ def enable_secret_scanner_push_protection(
 def enable_dependabot(organization: str, token: str, repository: str) -> bool:
     headers = network.get_github_headers(token)
 
-    status = requests.put(
+    status_alerts = requests.put(
         url=f"https://api.github.com/repos/{organization}/{repository}/vulnerability-alerts",
         headers=headers,
     )
 
-    if status.status_code != 204:
+    status_fixes = requests.put(
+        url=f"https://api.github.com/repos/{organization}/{repository}/automated-security-fixes",
+        headers=headers,
+    )
+
+    if status_alerts.status_code != 204 and status_fixes != 204:
         return False
     else:
         return True
