@@ -280,6 +280,25 @@ def enable_dependabot(organization: str, token: str, repository: str) -> bool:
         return True
 
 
+def get_default_branch(organization: str, token: str, repository: str) -> str:
+    """Get the default branch slug for a repository"""
+    headers = network.get_github_headers(token)
+
+    repo = requests.get(
+        url=f"https://api.github.com/repos/{organization}/{repository}",
+        headers=headers,
+    )
+    if repo.status_code != 200:
+        return False
+
+    repo = repo.json()
+    try:
+        return repo["default_branch"]
+    except Exception:
+        return False
+    pass
+
+
 def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
     """
     1. Retrieve the repository main language. Select the `codeql-analysis.yml` file for that language.
@@ -288,6 +307,12 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
     3. Create an associated issue
     """
     headers = network.get_github_headers(token)
+
+    # Get default branch
+
+    default_branch = get_default_branch(organization, token, repository)
+    if not default_branch:
+        return False
 
     # Create a branch
     # https://docs.github.com/en/enterprise-cloud@latest/rest/git/refs#create-a-reference
@@ -301,9 +326,7 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
     refs = branch_resp.json()
     sha1 = ""
     for ref in refs:
-        if (
-            ref["ref"] == "refs/heads/main"
-        ):  # TODO: fetch the default branch first and adjust dynamically
+        if ref["ref"] == f"refs/heads/{default_branch}":
             sha1 = ref["object"]["sha"]
 
     if sha1 == "":
@@ -342,7 +365,7 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
         "title": "Enable CodeQL analysis",
         "body": "Please pull these awesome changes in!",
         "head": "jboursier-codeql-enable",
-        "base": "main",  # TODO: fetch the default branch first and adjust dynamically
+        "base": default_branch,
     }
 
     pr_resp = requests.post(
