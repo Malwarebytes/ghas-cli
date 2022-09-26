@@ -9,11 +9,7 @@ from . import network, repositories
 def get_repositories(team_slug: str, organization: str, token: str) -> List:
     """Get repositories for a specific team"""
 
-    headers = {
-        "accept": "application/vnd.github+json",
-        "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
-    }
+    headers = network.get_github_headers(token)
 
     repos_list = []
     page = 1
@@ -48,11 +44,7 @@ def get_repositories(team_slug: str, organization: str, token: str) -> List:
 def list(organization: str, token: str) -> str:
     """Get Teams for a specific organization"""
 
-    headers = {
-        "accept": "application/vnd.github+json",
-        "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
-    }
+    headers = network.get_github_headers(token)
 
     teams_list = []
     page = 1

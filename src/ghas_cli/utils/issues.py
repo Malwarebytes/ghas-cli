@@ -14,11 +14,8 @@ def create(
     token: str,
 ) -> None:
     """Create an issue on a repository"""
-    headers = {
-        "accept": "application/vnd.github+json",
-        "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
-    }
+    headers = network.get_github_headers(token)
+
     data = {
         "title": title,
         "body": content,
