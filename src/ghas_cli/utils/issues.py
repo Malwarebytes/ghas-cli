@@ -3,7 +3,7 @@
 
 from typing import List
 import requests
-from . import network, repositories
+from . import network
 
 
 def create(
