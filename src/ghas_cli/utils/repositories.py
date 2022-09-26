@@ -2,6 +2,7 @@
 #!/usr/bin/env python3
 
 from typing import List
+import base64
 import requests
 from . import network
 
@@ -14,7 +15,8 @@ class Repository:
         owner="",
         url="",
         description="",
-        language="",
+        main_language="",
+        languages=[],
         default_branch="main",
         license="",
         archived=False,
@@ -32,7 +34,8 @@ class Repository:
         self.owner: str = owner
         self.url: str = url
         self.description: str = description
-        self.language: str = language
+        self.main_language: str = main_language
+        self.languages: List = languages
         self.default_branch: str = default_branch
         self.license: str = license  # spdx_id
         self.archived: bool = archived
@@ -56,7 +59,8 @@ class Repository:
         self.owner = obj["owner"]["login"]
         self.url = obj["html_url"]
         self.description = obj["description"]
-        self.language = obj["language"]
+        self.main_language = obj["language"]
+        self.languages = get_languages(self.orga, token, self.name, False)
         self.default_branch = obj["default_branch"]
         try:
             self.license = obj["license"]["spdx_id"]
@@ -96,7 +100,8 @@ class Repository:
         * Owner: {self.owner}
         * Url: {self.url}
         * Description: {self.description}
-        * Language: {self.language}
+        * Main language: {self.main_language}
+        * All langages: {self.languages}
         * Default branch: {self.default_branch}
         * License: {self.license}
         * Archived: {self.archived}
@@ -117,7 +122,8 @@ class Repository:
             "owner": self.owner,
             "url": self.url,
             "description": self.description,
-            "language": self.language,
+            "main_language": self.main_language,
+            "languages": self.languages,
             "default_branch": self.default_branch,
             "license": self.license,
             "archived": self.archived,
@@ -175,7 +181,7 @@ def get_org_repositories(
             repo = Repository()
             repo.load_json(r, token=token)
 
-            if language != "" and repo.language != language:
+            if language != "" and repo.main_language != language:
                 continue
             if default_branch != "" and repo.default_branch != default_branch:
                 continue
@@ -298,6 +304,36 @@ def get_default_branch(organization: str, token: str, repository: str) -> str:
         return False
 
 
+def get_languages(
+    organization: str, token: str, repository: str, only_interpreted: False
+) -> str:
+    """Get the main language for a repository"""
+    headers = network.get_github_headers(token)
+    interpreted_languages = {"javascript", "python", "ruby"}
+    languages = requests.get(
+        url=f"https://api.github.com/repos/{organization}/{repository}/languages",
+        headers=headers,
+    )
+    if languages.status_code != 200:
+        return False
+
+    lang = []
+    for l in languages.json():
+        if only_interpreted:
+            if l.lower() in interpreted_languages:
+                lang.append(l.lower())
+        else:
+            lang.append(l.lower())
+
+    return lang
+
+
+def load_codeql_base64_template(language) -> str:
+    with open(f"./templates/codeql-analysis-{language.lower()}.yml", "r") as f:
+        template = f.read()
+    return str(base64.b64encode(template.encode(encoding=ascii)), "utf-8")
+
+
 def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
     """
     1. Retrieve the repository main language. Select the `codeql-analysis.yml` file for that language.
@@ -344,25 +380,27 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
         return False
 
     # Create commit
+    languages = get_languages(organization, token, repository, only_interpreted=True)
+    for language in languages:
+        # template = load_codeql_base64_template(language)
+        payload = {
+            "message": f"Enable CodeQL analysis for {language}",
+            "content": load_codeql_base64_template(language),
+            "branch": target_branch,
+        }
 
-    payload = {
-        "message": "Enable CodeQL analysis",
-        "content": "bXkgbmV3IGZpbGUgY29udGVudHM=",  # TODO: load the proper yaml template based on the main language
-        "branch": target_branch,
-    }
-
-    commit_resp = requests.put(
-        url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis.yml",
-        headers=headers,
-        json=payload,
-    )
-    if commit_resp.status_code != 201:
-        return False
+        commit_resp = requests.put(
+            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis.yml",
+            headers=headers,
+            json=payload,
+        )
+        if commit_resp.status_code != 201:
+            return False
 
     # Create PR
     payload = {
         "title": "Enable CodeQL analysis",
-        "body": "Please pull these awesome changes in!",  # TODO: change the body accordingly, per language
+        "body": f"This pr creates CodeQL analysis for {languages}.",
         "head": target_branch,
         "base": default_branch,
     }
