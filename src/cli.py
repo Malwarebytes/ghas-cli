@@ -18,7 +18,7 @@ except ImportError:
     print("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from ghas_cli.utils import repositories, vulns, teams, issues
+from ghas_cli.utils import repositories, vulns, teams, issues, actions
 
 
 def main() -> None:
@@ -425,10 +425,61 @@ def dependabot_alerts() -> None:
 ###########
 
 
-@cli.group()
-def actions() -> None:
+@cli.group(name="actions")
+def actions_cli() -> None:
     """Manage Actions and their workflows"""
     pass
+
+
+@actions_cli.command("set_permissions")
+@click.option(
+    "-e",
+    "--enabled",
+    type=click.BOOL,
+    default=True,
+    prompt="Enable Actions?",
+)
+@click.option(
+    "-a",
+    "--allowed_actions",
+    type=click.Choice(["all", "local_only", "selected"]),
+    default="selected",
+    prompt="Allowed Actions",
+)
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def actions_set_permissions(
+    enabled: bool,
+    allowed_actions: str,
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Set Actions permissions on a repository"""
+
+    permissions = actions.set_permissions(
+        repository_name=repository,
+        organization=organization,
+        token=token,
+        enabled=enabled,
+        allowed_actions=allowed_actions,
+    )
+
+    click.echo(permissions)
 
 
 if __name__ == "__main__":
