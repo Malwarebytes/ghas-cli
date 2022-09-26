@@ -26,7 +26,7 @@ If you have a red X next to CodeQL, that means that CodeQL is not configured for
 3) [Configuring Code Scanning](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning).
 
 
-If you need any more assistance, please don't hesitate to contact a member of Application Security team (tag @appsec-team in this issue, or `#github-appsec-security` on Slack). We are here to help.
+If you need any more assistance, please don't hesitate to contact a member of Application Security team (tag @Malwarebytes/security-appsec in this issue, or `#github-appsec-security` on Slack). We are here to help.
 
 Thanks!
 

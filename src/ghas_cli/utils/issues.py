@@ -26,7 +26,6 @@ def create(
         "milestone": None,
         "labels": ["info", "security"],
     }
-    print(data)
 
     issue = requests.post(
         url=f"https://api.github.com/repos/{organization}/{repository}/issues",

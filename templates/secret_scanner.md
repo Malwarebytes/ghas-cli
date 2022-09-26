@@ -20,7 +20,7 @@ We want to make sure **you** are empowered to maintain the security of your repo
 2) [Managing alerts from Secret Scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/managing-alerts-from-secret-scanning)
 
 
-If you need any more assistance, please don't hesitate to contact a member of Application Security team (tag @appsec-team in this issue, or `#github-appsec-security` on Slack). We are here to help.
+If you need any more assistance, please don't hesitate to contact a member of Application Security team (tag @Malwarebytes/security-appsec in this issue, or `#github-appsec-security` on Slack). We are here to help.
 
 Thanks!
 
