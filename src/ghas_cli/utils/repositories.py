@@ -296,7 +296,6 @@ def get_default_branch(organization: str, token: str, repository: str) -> str:
         return repo["default_branch"]
     except Exception:
         return False
-    pass
 
 
 def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
@@ -307,15 +306,14 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
     3. Create an associated issue
     """
     headers = network.get_github_headers(token)
+    target_branch = "appsec:ghas:codeql_enable"
 
-    # Get default branch
-
+    # Get the default branch
     default_branch = get_default_branch(organization, token, repository)
     if not default_branch:
         return False
 
     # Create a branch
-    # https://docs.github.com/en/enterprise-cloud@latest/rest/git/refs#create-a-reference
     branch_resp = requests.get(
         url=f"https://api.github.com/repos/{organization}/{repository}/git/refs/heads",
         headers=headers,
@@ -333,7 +331,7 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
         return False
 
     payload = {
-        "ref": "refs/heads/jboursier-codeql-enable",
+        "ref": f"refs/heads/{target_branch}",
         "sha": sha1,
     }
 
@@ -346,10 +344,11 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
         return False
 
     # Create commit
+
     payload = {
         "message": "Enable CodeQL analysis",
-        "content": "bXkgbmV3IGZpbGUgY29udGVudHM=",
-        "branch": "jboursier-codeql-enable",
+        "content": "bXkgbmV3IGZpbGUgY29udGVudHM=",  # TODO: load the proper yaml template based on the main language
+        "branch": target_branch,
     }
 
     commit_resp = requests.put(
@@ -363,8 +362,8 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
     # Create PR
     payload = {
         "title": "Enable CodeQL analysis",
-        "body": "Please pull these awesome changes in!",
-        "head": "jboursier-codeql-enable",
+        "body": "Please pull these awesome changes in!",  # TODO: change the body accordingly, per language
+        "head": target_branch,
         "base": default_branch,
     }
 
