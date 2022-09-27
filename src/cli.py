@@ -10,7 +10,7 @@ __status__ = "Development"
 
 try:
     import click
-    from typing import Dict, List
+    from typing import Dict, List, Any
     from datetime import datetime
 except ImportError:
     import sys
@@ -514,6 +514,140 @@ def actions_set_permissions(
     )
 
     click.echo(permissions)
+
+
+###############
+# Mass deploy #
+###############
+
+
+@cli.group(name="mass")
+def mass_cli() -> None:
+    """Manage large scale deployment"""
+    pass
+
+
+@mass_cli.command("deploy")
+@click.option(
+    "-a",
+    "--actions",
+    type=click.BOOL,
+    prompt="Enable GH Actions (to `selected`)?",
+)
+@click.option(
+    "-s",
+    "--secretscanner",
+    type=click.BOOL,
+    prompt="Enable Secret Scanner?",
+)
+@click.option(
+    "-p",
+    "--pushprotection",
+    type=click.BOOL,
+    prompt="Enable Push Protection?",
+)
+@click.option(
+    "-d",
+    "--dependabot",
+    type=click.BOOL,
+    prompt="Enable Dependabot?",
+)
+@click.option(
+    "-c",
+    "--codeql",
+    type=click.BOOL,
+    prompt="Deploy CodeQL?",
+)
+@click.argument("input_repos_list", type=click.File("r"))
+@click.argument("output_csv", type=click.File("w", lazy=True))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_deploy(
+    actions: bool,
+    secretscanner: bool,
+    pushprotection: bool,
+    dependabot: bool,
+    codeql: bool,
+    input_repos_list: Any,
+    output_csv: Any,
+    organization: str,
+    token: str,
+) -> None:
+    """Mass deploy all GHAS to a list of repositories"""
+
+    repos_list = input_repos_list.readlines()
+
+    with open("./templates/secret_scanner.md", "r") as f:
+        template_secretscanner = f.read()
+    with open("./templates/secret_scanner_push_protection.md", "r") as f:
+        template_pushprotection = f.read()
+    with open("./templates/dependabot.md", "r") as f:
+        template_dependabot = f.read()
+    with open("./templates/codeql.md", "r") as f:
+        template_codeql = f.read()
+
+    for repo in repos_list:
+        if actions:
+            actions_res = actions.set_permissions(
+                repository_name=repo,
+                organization=organization,
+                token=token,
+                enabled=True,
+                allowed_actions="selected",
+            )
+        if secretscanner:
+            secretscanner_res = repositories.enable_secret_scanner(
+                organization, token, repo
+            )
+            if secretscanner_res != False:
+                issue_res = issues.create(
+                    title="About Secret Scanner",
+                    content=template_secretscanner,
+                    repository=repo,
+                    organization=organization,
+                    token=token,
+                )
+        if pushprotection:
+            pushprotection_res = repositories.enable_secret_scanner_push_protection(
+                organization, token, repo
+            )
+            if pushprotection_res != False:
+                issue_res = issues.create(
+                    title="About Secret Push Protection",
+                    content=template_pushprotection,
+                    repository=repo,
+                    organization=organization,
+                    token=token,
+                )
+        if dependabot:
+            dependabot_res = repositories.enable_dependabot(organization, token, repo)
+            if dependabot_res != False:
+                issue_res = issues.create(
+                    title="About Dependabot",
+                    content=template_dependabot,
+                    repository=repo,
+                    organization=organization,
+                    token=token,
+                )
+        if codeql:
+            codeql_res = repositories.create_codeql_pr(organization, token, repo)
+            if codeql_res != False:
+                issue_res = issues.create(
+                    title="About Security code scanning",
+                    content=codeql,
+                    repository=repo,
+                    organization=organization,
+                    token=token,
+                )
 
 
 if __name__ == "__main__":
