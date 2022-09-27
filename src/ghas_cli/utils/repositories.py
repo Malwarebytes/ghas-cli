@@ -101,7 +101,7 @@ class Repository:
         * Url: {self.url}
         * Description: {self.description}
         * Main language: {self.main_language}
-        * All langages: {self.languages}
+        * All languages: {self.languages}
         * Default branch: {self.default_branch}
         * License: {self.license}
         * Archived: {self.archived}
