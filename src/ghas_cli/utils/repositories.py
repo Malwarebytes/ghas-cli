@@ -368,15 +368,19 @@ def load_codeql_base64_template(language) -> tuple:
     return language, str(base64.b64encode(template.encode(encoding="utf-8")), "utf-8")
 
 
-def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
+def create_codeql_pr(
+    organization: str,
+    token: str,
+    repository: str,
+    target_branch: str = "appsec-ghas-codeql_enable",
+) -> bool:
     """
-    1. Retrieve the repository main language. Select the `codeql-analysis.yml` file for that language.
+    1. Retrieve the repository languages. Select the `codeql-analysis.yml` file for that language.
     2. Create a branch
     3. Push a .github/workflows/codeql-analysis.yml to the repository on that branch
-    3. Create an associated issue
+    3. Create an associated PR
     """
     headers = network.get_github_headers(token)
-    target_branch = "appsec-ghas-codeql_enable"
 
     # Get the default branch
     default_branch = get_default_branch(organization, token, repository)
@@ -438,7 +442,7 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
     # Create PR
     payload = {
         "title": "Security Code Scanning - configuration files",
-        "body": f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({languages}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @Malwarebytes/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team.",
+        "body": f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({languages}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team.",
         "head": target_branch,
         "base": default_branch,
     }

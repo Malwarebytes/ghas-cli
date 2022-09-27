@@ -300,6 +300,12 @@ def repositories_enable_dependabot(
     prompt="Repository name",
 )
 @click.option(
+    "-b",
+    "--branch",
+    prompt="Branch name to create",
+    default="appsec-ghas-codeql_enable",
+)
+@click.option(
     "-t",
     "--token",
     prompt=False,
@@ -311,12 +317,14 @@ def repositories_enable_dependabot(
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
 def repositories_create_codeql_pr(
-    repository: str,
-    organization: str,
-    token: str,
+    repository: str, organization: str, token: str, branch: str
 ) -> None:
     """Create a CodeQL PR"""
-    click.echo(repositories.create_codeql_pr(organization, token, repository))
+    click.echo(
+        repositories.create_codeql_pr(
+            organization, token, repository, target_branch=branch
+        )
+    )
 
 
 #########
