@@ -154,6 +154,7 @@ def get_org_repositories(
     page = 1
 
     headers = network.get_github_headers(token)
+    repos_list = []
     while True:
         params = {
             "type": f"{status}",
@@ -175,21 +176,35 @@ def get_org_repositories(
         if [] == repos.json():
             break
 
-        repos_list = []
         for r in repos.json():
 
             repo = Repository()
             repo.load_json(r, token=token)
 
             if language != "" and repo.main_language != language:
+                # print(
+                #    f"{repo.name} ignored because of language: {language} vs. {repo.main_language}"
+                # )
                 continue
             if default_branch != "" and repo.default_branch != default_branch:
+                # print(
+                #    f"{repo.name} ignored because of default branch: {default_branch} vs. {repo.default_branch}"
+                # )
                 continue
             if license != "" and repo.license != license:
+                # print(
+                #    f"{repo.name} ignored because of license: {license} vs. {repo.license}"
+                # )
                 continue
             if repo.archived != archived:
+                # print(
+                #    f"{repo.name} ignored because of archived: {archived} vs. {repo.archived}"
+                # )
                 continue
             if repo.disabled != disabled:
+                # print(
+                #    f"{repo.name} ignored because of license: {archived} vs. {repo.archived}"
+                # )
                 continue
 
             repos_list.append(repo)
