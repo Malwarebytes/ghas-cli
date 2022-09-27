@@ -356,16 +356,31 @@ def get_languages(
     return list(lang)
 
 
-def load_codeql_base64_template(language) -> tuple:
+def load_codeql_base64_template(language: str, default_branch: str = "main") -> tuple:
     language = language.lower()
     try:
         with open(f"./templates/codeql-analysis-{language.lower()}.yml", "r") as f:
-            template = f.read()
+            # Ugly af but `yaml` transforms `on:` to `True:` which is obviously annoying to parse Github Actions files..
+            template = f.readlines()
+            template_new = ""
+            for l in template:
+                if l == '    branches: ["main"]\n':
+                    template_new += f"    branches: ['{default_branch}']\n"
+                else:
+                    template_new += l
     except Exception as e:
         with open(f"./templates/codeql-analysis-default.yml", "r") as f:
-            template = f.read()
             language = "default"
-    return language, str(base64.b64encode(template.encode(encoding="utf-8")), "utf-8")
+            template = f.readlines()
+            template_new = ""
+            for l in template:
+                if l == '    branches: ["main"]\n':
+                    template_new += f"    branches: ['{default_branch}']\n"
+                else:
+                    template_new += l
+    return language, str(
+        base64.b64encode(template_new.encode(encoding="utf-8")), "utf-8"
+    )
 
 
 def create_codeql_pr(
@@ -424,7 +439,7 @@ def create_codeql_pr(
     )
 
     for language in languages:
-        lang, template = load_codeql_base64_template(language)
+        lang, template = load_codeql_base64_template(language, default_branch)
         payload = {
             "message": f"Enable CodeQL analysis for {language}",
             "content": template,
