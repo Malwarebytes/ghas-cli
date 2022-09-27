@@ -60,7 +60,7 @@ class Repository:
         self.url = obj["html_url"]
         self.description = obj["description"]
         self.main_language = obj["language"]
-        self.languages = get_languages(self.orga, token, self.name, False)
+        self.languages = get_languages(self.orga, token, self.name, False, False)
         self.default_branch = obj["default_branch"]
         try:
             self.license = obj["license"]["spdx_id"]
@@ -320,11 +320,18 @@ def get_default_branch(organization: str, token: str, repository: str) -> str:
 
 
 def get_languages(
-    organization: str, token: str, repository: str, only_interpreted: False
-) -> str:
+    organization: str,
+    token: str,
+    repository: str,
+    only_interpreted: False,
+    only_codeql: False,
+) -> List:
     """Get the main language for a repository"""
-    headers = network.get_github_headers(token)
+
     interpreted_languages = {"javascript", "python", "ruby"}
+    aliased_interpreted_languages = {"typescript": "javascript"}
+
+    headers = network.get_github_headers(token)
     languages = requests.get(
         url=f"https://api.github.com/repos/{organization}/{repository}/languages",
         headers=headers,
@@ -332,15 +339,21 @@ def get_languages(
     if languages.status_code != 200:
         return []
 
-    lang = []
+    lang = set()
     for l in languages.json():
         if only_interpreted:
             if l.lower() in interpreted_languages:
-                lang.append(l.lower())
+                lang.add(l.lower())
+            else:
+                if only_codeql:
+                    try:
+                        lang.add(aliased_interpreted_languages[l.lower()])
+                    except Exception as e:
+                        continue
         else:
-            lang.append(l.lower())
+            lang.add(l.lower())
 
-    return lang
+    return list(lang)
 
 
 def load_codeql_base64_template(language) -> tuple:
@@ -352,7 +365,7 @@ def load_codeql_base64_template(language) -> tuple:
         with open(f"./templates/codeql-analysis-default.yml", "r") as f:
             template = f.read()
             language = "default"
-    return language, str(base64.b64encode(template.encode(encoding=ascii)), "utf-8")
+    return language, str(base64.b64encode(template.encode(encoding="utf-8")), "utf-8")
 
 
 def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
@@ -363,7 +376,7 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
     3. Create an associated issue
     """
     headers = network.get_github_headers(token)
-    target_branch = "appsec:ghas:codeql_enable"
+    target_branch = "appsec-ghas-codeql_enable"
 
     # Get the default branch
     default_branch = get_default_branch(organization, token, repository)
@@ -397,13 +410,16 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
         headers=headers,
         json=payload,
     )
+
     if branch_resp.status_code != 201:
         return False
 
     # Create commit
-    languages = get_languages(organization, token, repository, only_interpreted=True)
+    languages = get_languages(
+        organization, token, repository, only_interpreted=True, only_codeql=True
+    )
+
     for language in languages:
-        # template = load_codeql_base64_template(language)
         lang, template = load_codeql_base64_template(language)
         payload = {
             "message": f"Enable CodeQL analysis for {language}",
@@ -421,8 +437,8 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
 
     # Create PR
     payload = {
-        "title": "Enable CodeQL analysis",
-        "body": f"This pr creates CodeQL analysis for {languages}.",
+        "title": "Security Code Scanning - configuration files",
+        "body": f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({languages}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @Malwarebytes/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team.",
         "head": target_branch,
         "base": default_branch,
     }
