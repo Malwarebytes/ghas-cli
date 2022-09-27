@@ -559,7 +559,7 @@ def mass_cli() -> None:
     prompt="Deploy CodeQL?",
 )
 @click.argument("input_repos_list", type=click.File("r"))
-@click.argument("output_csv", type=click.File("w", lazy=True))
+@click.argument("output_csv", type=click.File("a", lazy=True))
 @click.option(
     "-t",
     "--token",
@@ -595,7 +595,12 @@ def mass_deploy(
     with open("./templates/codeql.md", "r") as f:
         template_codeql = f.read()
 
+    print(
+        f"Enabling Actions ({actions}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}) to {len(repos_list)} repositories.",
+        end="",
+    )
     for repo in repos_list:
+        print("{repo}....", end="")
         if actions:
             actions_res = actions.set_permissions(
                 repository_name=repo,
@@ -648,6 +653,12 @@ def mass_deploy(
                     organization=organization,
                     token=token,
                 )
+        print(
+            "Done: {actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}"
+        )
+        output_csv.write(
+            f"{organization},{repo},{actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}\n"
+        )
 
 
 if __name__ == "__main__":
