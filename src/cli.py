@@ -293,6 +293,32 @@ def repositories_enable_dependabot(
     click.echo(repositories.enable_dependabot(organization, token, repository))
 
 
+@repositories_cli.command("create_codeql_pr")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def repositories_create_codeql_pr(
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Create a CodeQL PR"""
+    click.echo(repositories.create_codeql_pr(organization, token, repository))
+
+
 #########
 # Teams #
 #########

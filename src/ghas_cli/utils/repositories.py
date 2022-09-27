@@ -2,6 +2,7 @@
 #!/usr/bin/env python3
 
 from typing import List
+import base64
 import requests
 from . import network
 
@@ -14,7 +15,8 @@ class Repository:
         owner="",
         url="",
         description="",
-        language="",
+        main_language="",
+        languages=[],
         default_branch="main",
         license="",
         archived=False,
@@ -32,7 +34,8 @@ class Repository:
         self.owner: str = owner
         self.url: str = url
         self.description: str = description
-        self.language: str = language
+        self.main_language: str = main_language
+        self.languages: List = languages
         self.default_branch: str = default_branch
         self.license: str = license  # spdx_id
         self.archived: bool = archived
@@ -56,7 +59,8 @@ class Repository:
         self.owner = obj["owner"]["login"]
         self.url = obj["html_url"]
         self.description = obj["description"]
-        self.language = obj["language"]
+        self.main_language = obj["language"]
+        self.languages = get_languages(self.orga, token, self.name, False, False)
         self.default_branch = obj["default_branch"]
         try:
             self.license = obj["license"]["spdx_id"]
@@ -96,7 +100,8 @@ class Repository:
         * Owner: {self.owner}
         * Url: {self.url}
         * Description: {self.description}
-        * Language: {self.language}
+        * Main language: {self.main_language}
+        * All languages: {self.languages}
         * Default branch: {self.default_branch}
         * License: {self.license}
         * Archived: {self.archived}
@@ -117,7 +122,8 @@ class Repository:
             "owner": self.owner,
             "url": self.url,
             "description": self.description,
-            "language": self.language,
+            "main_language": self.main_language,
+            "languages": self.languages,
             "default_branch": self.default_branch,
             "license": self.license,
             "archived": self.archived,
@@ -148,6 +154,7 @@ def get_org_repositories(
     page = 1
 
     headers = network.get_github_headers(token)
+    repos_list = []
     while True:
         params = {
             "type": f"{status}",
@@ -169,21 +176,35 @@ def get_org_repositories(
         if [] == repos.json():
             break
 
-        repos_list = []
         for r in repos.json():
 
             repo = Repository()
             repo.load_json(r, token=token)
 
-            if language != "" and repo.language != language:
+            if language != "" and repo.main_language != language:
+                # print(
+                #    f"{repo.name} ignored because of language: {language} vs. {repo.main_language}"
+                # )
                 continue
             if default_branch != "" and repo.default_branch != default_branch:
+                # print(
+                #    f"{repo.name} ignored because of default branch: {default_branch} vs. {repo.default_branch}"
+                # )
                 continue
             if license != "" and repo.license != license:
+                # print(
+                #    f"{repo.name} ignored because of license: {license} vs. {repo.license}"
+                # )
                 continue
             if repo.archived != archived:
+                # print(
+                #    f"{repo.name} ignored because of archived: {archived} vs. {repo.archived}"
+                # )
                 continue
             if repo.disabled != disabled:
+                # print(
+                #    f"{repo.name} ignored because of license: {archived} vs. {repo.archived}"
+                # )
                 continue
 
             repos_list.append(repo)
@@ -278,3 +299,156 @@ def enable_dependabot(organization: str, token: str, repository: str) -> bool:
         return False
     else:
         return True
+
+
+def get_default_branch(organization: str, token: str, repository: str) -> str:
+    """Get the default branch slug for a repository"""
+    headers = network.get_github_headers(token)
+
+    repo = requests.get(
+        url=f"https://api.github.com/repos/{organization}/{repository}",
+        headers=headers,
+    )
+    if repo.status_code != 200:
+        return False
+
+    repo = repo.json()
+    try:
+        return repo["default_branch"]
+    except Exception:
+        return False
+
+
+def get_languages(
+    organization: str,
+    token: str,
+    repository: str,
+    only_interpreted: False,
+    only_codeql: False,
+) -> List:
+    """Get the main language for a repository"""
+
+    interpreted_languages = {"javascript", "python", "ruby"}
+    aliased_interpreted_languages = {"typescript": "javascript"}
+
+    headers = network.get_github_headers(token)
+    languages = requests.get(
+        url=f"https://api.github.com/repos/{organization}/{repository}/languages",
+        headers=headers,
+    )
+    if languages.status_code != 200:
+        return []
+
+    lang = set()
+    for l in languages.json():
+        if only_interpreted:
+            if l.lower() in interpreted_languages:
+                lang.add(l.lower())
+            else:
+                if only_codeql:
+                    try:
+                        lang.add(aliased_interpreted_languages[l.lower()])
+                    except Exception as e:
+                        continue
+        else:
+            lang.add(l.lower())
+
+    return list(lang)
+
+
+def load_codeql_base64_template(language) -> tuple:
+    language = language.lower()
+    try:
+        with open(f"./templates/codeql-analysis-{language.lower()}.yml", "r") as f:
+            template = f.read()
+    except Exception as e:
+        with open(f"./templates/codeql-analysis-default.yml", "r") as f:
+            template = f.read()
+            language = "default"
+    return language, str(base64.b64encode(template.encode(encoding="utf-8")), "utf-8")
+
+
+def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
+    """
+    1. Retrieve the repository main language. Select the `codeql-analysis.yml` file for that language.
+    2. Create a branch
+    3. Push a .github/workflows/codeql-analysis.yml to the repository on that branch
+    3. Create an associated issue
+    """
+    headers = network.get_github_headers(token)
+    target_branch = "appsec-ghas-codeql_enable"
+
+    # Get the default branch
+    default_branch = get_default_branch(organization, token, repository)
+    if not default_branch:
+        return False
+
+    # Create a branch
+    branch_resp = requests.get(
+        url=f"https://api.github.com/repos/{organization}/{repository}/git/refs/heads",
+        headers=headers,
+    )
+    if branch_resp.status_code != 200:
+        return False
+
+    refs = branch_resp.json()
+    sha1 = ""
+    for ref in refs:
+        if ref["ref"] == f"refs/heads/{default_branch}":
+            sha1 = ref["object"]["sha"]
+
+    if sha1 == "":
+        return False
+
+    payload = {
+        "ref": f"refs/heads/{target_branch}",
+        "sha": sha1,
+    }
+
+    branch_resp = requests.post(
+        url=f"https://api.github.com/repos/{organization}/{repository}/git/refs",
+        headers=headers,
+        json=payload,
+    )
+
+    if branch_resp.status_code != 201:
+        return False
+
+    # Create commit
+    languages = get_languages(
+        organization, token, repository, only_interpreted=True, only_codeql=True
+    )
+
+    for language in languages:
+        lang, template = load_codeql_base64_template(language)
+        payload = {
+            "message": f"Enable CodeQL analysis for {language}",
+            "content": template,
+            "branch": target_branch,
+        }
+
+        commit_resp = requests.put(
+            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis-{lang}.yml",
+            headers=headers,
+            json=payload,
+        )
+        if commit_resp.status_code != 201:
+            return False
+
+    # Create PR
+    payload = {
+        "title": "Security Code Scanning - configuration files",
+        "body": f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({languages}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @Malwarebytes/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team.",
+        "head": target_branch,
+        "base": default_branch,
+    }
+
+    pr_resp = requests.post(
+        url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
+        headers=headers,
+        json=payload,
+    )
+    if pr_resp.status_code != 201:
+        return False
+
+    return True
