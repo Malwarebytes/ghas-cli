@@ -343,10 +343,16 @@ def get_languages(
     return lang
 
 
-def load_codeql_base64_template(language) -> str:
-    with open(f"./templates/codeql-analysis-{language.lower()}.yml", "r") as f:
-        template = f.read()
-    return str(base64.b64encode(template.encode(encoding=ascii)), "utf-8")
+def load_codeql_base64_template(language) -> tuple:
+    language = language.lower()
+    try:
+        with open(f"./templates/codeql-analysis-{language.lower()}.yml", "r") as f:
+            template = f.read()
+    except Exception as e:
+        with open(f"./templates/codeql-analysis-default.yml", "r") as f:
+            template = f.read()
+            language = "default"
+    return language, str(base64.b64encode(template.encode(encoding=ascii)), "utf-8")
 
 
 def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
@@ -398,14 +404,15 @@ def create_codeql_pr(organization: str, token: str, repository: str) -> bool:
     languages = get_languages(organization, token, repository, only_interpreted=True)
     for language in languages:
         # template = load_codeql_base64_template(language)
+        lang, template = load_codeql_base64_template(language)
         payload = {
             "message": f"Enable CodeQL analysis for {language}",
-            "content": load_codeql_base64_template(language),
+            "content": template,
             "branch": target_branch,
         }
 
         commit_resp = requests.put(
-            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis.yml",
+            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis-{lang}.yml",
             headers=headers,
             json=payload,
         )
