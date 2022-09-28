@@ -476,7 +476,7 @@ def create_codeql_pr(
         }
 
         commit_resp = requests.put(
-            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis-{lang}.yml",
+            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-config-{lang}.yml",
             headers=headers,
             json=payload,
         )
