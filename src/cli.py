@@ -530,7 +530,7 @@ def mass_cli() -> None:
 @mass_cli.command("deploy")
 @click.option(
     "-a",
-    "--actions",
+    "--actions_enable",
     type=click.BOOL,
     prompt="Enable GH Actions (to `selected`)?",
 )
@@ -572,7 +572,7 @@ def mass_cli() -> None:
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
 def mass_deploy(
-    actions: bool,
+    actions_enable: bool,
     secretscanner: bool,
     pushprotection: bool,
     dependabot: bool,
@@ -596,20 +596,25 @@ def mass_deploy(
         template_codeql = f.read()
 
     print(
-        f"Enabling Actions ({actions}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}) to {len(repos_list)} repositories.",
-        end="",
+        f"Enabling Actions ({actions_enable}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}) to {len(repos_list)} repositories."
     )
 
     for repo in repos_list:
 
+        repo = repo.rstrip("\n")
         issue_secretscanner_res = None
         issue_pushprotection_res = None
         issue_dependabot_res = None
         issue_codeql_res = None
+        actions_res = None
+        secretscanner_res = None
+        pushprotection_res = None
+        dependabot_res = None
+        codeql_res = None
 
-        print("{repo}....", end="")
+        print(f"{repo}....", end="")
 
-        if actions:
+        if actions_enable:
             actions_res = actions.set_permissions(
                 repository_name=repo,
                 organization=organization,
