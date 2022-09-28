@@ -383,6 +383,17 @@ def load_codeql_base64_template(language: str, default_branch: str = "main") -> 
     )
 
 
+def load_codeql_config_base64_template(language: str) -> tuple:
+    language = language.lower()
+    try:
+        with open(f"./templates/codeql-config-{language.lower()}.yml", "r") as f:
+            template = f.read()
+    except Exception as e:
+        with open(f"./templates/codeql-config-default.yml", "r") as f:
+            template = f.read()
+    return language, str(base64.b64encode(template.encode(encoding="utf-8")), "utf-8")
+
+
 def create_codeql_pr(
     organization: str,
     token: str,
@@ -439,6 +450,8 @@ def create_codeql_pr(
     )
 
     for language in languages:
+
+        # Workflow config
         lang, template = load_codeql_base64_template(language, default_branch)
         payload = {
             "message": f"Enable CodeQL analysis for {language}",
@@ -448,6 +461,22 @@ def create_codeql_pr(
 
         commit_resp = requests.put(
             url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis-{lang}.yml",
+            headers=headers,
+            json=payload,
+        )
+        if commit_resp.status_code != 201:
+            return False
+
+        # CodeQL config file
+        lang, template = load_codeql_config_base64_template(language)
+        payload = {
+            "message": f"Enable CodeQL config file for {language}",
+            "content": template,
+            "branch": target_branch,
+        }
+
+        commit_resp = requests.put(
+            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-config-{lang}.yml",
             headers=headers,
             json=payload,
         )
