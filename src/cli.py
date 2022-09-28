@@ -10,7 +10,7 @@ __status__ = "Development"
 
 try:
     import click
-    from typing import Dict, List
+    from typing import Dict, Any
     from datetime import datetime
 except ImportError:
     import sys
@@ -514,6 +514,161 @@ def actions_set_permissions(
     )
 
     click.echo(permissions)
+
+
+###############
+# Mass deploy #
+###############
+
+
+@cli.group(name="mass")
+def mass_cli() -> None:
+    """Manage large scale deployment"""
+    pass
+
+
+@mass_cli.command("deploy")
+@click.option(
+    "-a",
+    "--actions",
+    type=click.BOOL,
+    prompt="Enable GH Actions (to `selected`)?",
+)
+@click.option(
+    "-s",
+    "--secretscanner",
+    type=click.BOOL,
+    prompt="Enable Secret Scanner?",
+)
+@click.option(
+    "-p",
+    "--pushprotection",
+    type=click.BOOL,
+    prompt="Enable Push Protection?",
+)
+@click.option(
+    "-d",
+    "--dependabot",
+    type=click.BOOL,
+    prompt="Enable Dependabot?",
+)
+@click.option(
+    "-c",
+    "--codeql",
+    type=click.BOOL,
+    prompt="Deploy CodeQL?",
+)
+@click.argument("input_repos_list", type=click.File("r"))
+@click.argument("output_csv", type=click.File("a", lazy=True))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_deploy(
+    actions: bool,
+    secretscanner: bool,
+    pushprotection: bool,
+    dependabot: bool,
+    codeql: bool,
+    input_repos_list: Any,
+    output_csv: Any,
+    organization: str,
+    token: str,
+) -> None:
+    """Mass deploy all GHAS to a list of repositories"""
+
+    repos_list = input_repos_list.readlines()
+
+    with open("./templates/secret_scanner.md", "r") as f:
+        template_secretscanner = f.read()
+    with open("./templates/secret_scanner_push_protection.md", "r") as f:
+        template_pushprotection = f.read()
+    with open("./templates/dependabot.md", "r") as f:
+        template_dependabot = f.read()
+    with open("./templates/codeql.md", "r") as f:
+        template_codeql = f.read()
+
+    print(
+        f"Enabling Actions ({actions}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}) to {len(repos_list)} repositories.",
+        end="",
+    )
+
+    for repo in repos_list:
+
+        issue_secretscanner_res = None
+        issue_pushprotection_res = None
+        issue_dependabot_res = None
+        issue_codeql_res = None
+
+        print("{repo}....", end="")
+
+        if actions:
+            actions_res = actions.set_permissions(
+                repository_name=repo,
+                organization=organization,
+                token=token,
+                enabled=True,
+                allowed_actions="selected",
+            )
+        if secretscanner:
+            secretscanner_res = repositories.enable_secret_scanner(
+                organization, token, repo
+            )
+            if secretscanner_res != False:
+                issue_secretscanner_res = issues.create(
+                    title="About Secret Scanner",
+                    content=template_secretscanner,
+                    repository=repo,
+                    organization=organization,
+                    token=token,
+                )
+        if pushprotection:
+            pushprotection_res = repositories.enable_secret_scanner_push_protection(
+                organization, token, repo
+            )
+            if pushprotection_res != False:
+                issue_pushprotection_res = issues.create(
+                    title="About Secret Push Protection",
+                    content=template_pushprotection,
+                    repository=repo,
+                    organization=organization,
+                    token=token,
+                )
+        if dependabot:
+            dependabot_res = repositories.enable_dependabot(organization, token, repo)
+            if dependabot_res != False:
+                issue_dependabot_res = issues.create(
+                    title="About Dependabot",
+                    content=template_dependabot,
+                    repository=repo,
+                    organization=organization,
+                    token=token,
+                )
+        if codeql:
+            codeql_res = repositories.create_codeql_pr(organization, token, repo)
+            if codeql_res != False:
+                issue_codeql_res = issues.create(
+                    title="About Security code scanning",
+                    content=template_codeql,
+                    repository=repo,
+                    organization=organization,
+                    token=token,
+                )
+        print(
+            f"Done: {actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}"
+        )
+        # CSV columns
+        # Organization, repo_name, Actions Enabled?, SS enabled?, PushProtection Enabled?, Dependabot Enabled?, CodeQL enabled?, Issue SS created?, Issue PP created?, Issue Dependabot created?, Issue CodeQL created?
+        output_csv.write(
+            f"{organization},{repo},{actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}\n"
+        )
 
 
 if __name__ == "__main__":
