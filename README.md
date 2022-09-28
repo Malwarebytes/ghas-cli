@@ -14,6 +14,11 @@ python -m pip install /full/path/to/ghas-cli-xxx.whl
 # e.g: python3 -m pip install Downloads/ghas-cli-0.5.0-none-any.whl
 ```
 
+## Usage
+
+`ghas-cli -h` or see the [wiki](https://github.com/Malwarebytes/Security-ghas-cli/wiki).
+
+
 ## Development
 
 ### Build
