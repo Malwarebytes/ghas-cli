@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ghas-cli"
-version = "0.0.1"
+version = "1.0.0"
 description = "Python3 command line interface to interact with Github Advanced Security."
 authors = ["jboursier <jboursier@malwarebytes.com>"]
 license = "MIT"
