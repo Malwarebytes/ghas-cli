@@ -157,7 +157,7 @@ def repositories_cli() -> None:
     "--format",
     prompt="Output format",
     type=click.Choice(
-        ["human", "ghas", "json"],
+        ["human", "ghas", "json", "list"],
         case_sensitive=False,
     ),
     default="human",
@@ -209,6 +209,9 @@ def repositories_list(
         for r in res:
             repos.append(r.to_json())
         click.echo(repos)
+    elif "list" == format:
+        for r in res:
+            click.echo(r.name)
 
 
 @repositories_cli.command("enable_ss_protection")
