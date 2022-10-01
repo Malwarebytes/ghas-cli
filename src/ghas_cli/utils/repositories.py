@@ -500,3 +500,97 @@ def create_codeql_pr(
         return False
 
     return True
+
+
+###### Dependency Review
+
+
+def load_dependency_review_base64_template() -> str:
+    with open(f"./templates/dependency_enforcement.yml", "r") as f:
+        template = f.read()
+
+    return str(base64.b64encode(template.encode(encoding="utf-8")), "utf-8")
+
+
+def create_dependency_enforcement_pr(
+    organization: str,
+    token: str,
+    repository: str,
+    target_branch: str = "appsec-ghas-dep-enforcement-enable",
+) -> bool:
+    """
+    2. Create a branch
+    3. Push a .github/workflows/dependency_enforcement.yml to the repository on that branch
+    3. Create an associated PR
+    """
+    headers = network.get_github_headers(token)
+
+    # Get the default branch
+    default_branch = get_default_branch(organization, token, repository)
+    if not default_branch:
+        return False
+
+    # Create a branch
+    branch_resp = requests.get(
+        url=f"https://api.github.com/repos/{organization}/{repository}/git/refs/heads",
+        headers=headers,
+    )
+    if branch_resp.status_code != 200:
+        return False
+
+    refs = branch_resp.json()
+    sha1 = ""
+    for ref in refs:
+        if ref["ref"] == f"refs/heads/{default_branch}":
+            sha1 = ref["object"]["sha"]
+
+    if sha1 == "":
+        return False
+
+    payload = {
+        "ref": f"refs/heads/{target_branch}",
+        "sha": sha1,
+    }
+
+    branch_resp = requests.post(
+        url=f"https://api.github.com/repos/{organization}/{repository}/git/refs",
+        headers=headers,
+        json=payload,
+    )
+
+    if branch_resp.status_code != 201:
+        return False
+
+    # Create commit
+    template = load_dependency_review_base64_template()
+    payload = {
+        "message": f"Enable Dependency reviewer",
+        "content": template,
+        "branch": target_branch,
+    }
+
+    commit_resp = requests.put(
+        url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/dependency_enforcement.yml",
+        headers=headers,
+        json=payload,
+    )
+    if commit_resp.status_code != 201:
+        return False
+
+    # Create PR
+    payload = {
+        "title": "Dependency reviewer",
+        "body": f"This PR enables the Dependency Reviewer in your repository. It also to prevents vulnerable dependencies from reaching out your codebase. In most cases you will be able to merge this PR as is and start benefiting from its features right away, as a check in each PR. \nHowever, we encourage you to tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team.",
+        "head": target_branch,
+        "base": default_branch,
+    }
+
+    pr_resp = requests.post(
+        url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
+        headers=headers,
+        json=payload,
+    )
+    if pr_resp.status_code != 201:
+        return False
+
+    return True

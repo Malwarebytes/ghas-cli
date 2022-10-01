@@ -18,6 +18,3 @@ jobs:
         with:
           fail-on-severity: high
           fail-on-scopes: runtime, development
-
-          # Use comma-separated names to pass list arguments:
-          deny-licenses: LGPL-2.0, BSD-2-Clause
