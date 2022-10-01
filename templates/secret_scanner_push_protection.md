@@ -18,7 +18,7 @@ We are rolling out Secret Scanning Push Protection per teams, so if you have onl
 We want to make sure **you** are empowered to maintain the security of your repositories. Thus we count on you to properly react when a secret scanning alert is triggered, following the documentation below:
 
 
-1) [What to do when a secret scanning alert is triggered?](https://confluence...)
+1) [What to do when a secret scanning alert is triggered?](https://malwarebytes.atlassian.net/wiki/spaces/IS/pages/2697920780/How+to+react+to+Secret+Scanner+alerts)
 2) [How to remove a secret from a branch blocked by Secret Scanning Push Protection?](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/pushing-a-branch-blocked-by-push-protection)
 2) [Managing alerts from Secret Scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/managing-alerts-from-secret-scanning)
 

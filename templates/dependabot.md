@@ -18,7 +18,7 @@ We are rolling out Dependabot and Dependency Graph per teams, so if you have onl
 We want to make sure **you** are empowered to maintain the security of your repositories. Thus we count on you to properly react when a vulnerability alert is triggered, following the documentation below:
 
 
-1) [What to do when a dependency vulnerability alert is triggered?](https://confluence...)
+1) [What to do when a dependency vulnerability alert is triggered?](https://malwarebytes.atlassian.net/wiki/spaces/IS/pages/2698150159/How+to+make+use+of+Dependabot+alerts)
 
 
 If you need any more assistance, please don't hesitate to contact a member of Application Security team (tag @Malwarebytes/security-appsec in this issue, or `#github-appsec-security` on Slack). We are here to help.

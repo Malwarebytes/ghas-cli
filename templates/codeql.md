@@ -21,7 +21,7 @@ If you have a red X next to CodeQL, that means that CodeQL is not configured for
 
 
 
-1) [Internal CodeQL resources](https://confluence...)
+1) [Internal CodeQL resources](https://malwarebytes.atlassian.net/wiki/spaces/IS/pages/2698215702/How+to+use+the+vulnerability+scanner+CodeQL)
 2) [Compiled Languages with CodeQL](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-the-codeql-workflow-for-compiled-languages)
 3) [Configuring Code Scanning](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning).
 
