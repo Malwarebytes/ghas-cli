@@ -327,6 +327,40 @@ def repositories_create_codeql_pr(
     )
 
 
+@repositories_cli.command("create_dep_enforcement_pr")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-b",
+    "--branch",
+    prompt="Branch name to create",
+    default="appsec-ghas-dep-enforcement-enable",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def repositories_create_dep_enforcement_pr(
+    repository: str, organization: str, token: str, branch: str
+) -> None:
+    """Create a Dependency enforcement PR"""
+    click.echo(
+        repositories.create_dependency_enforcement_pr(
+            organization, token, repository, target_branch=branch
+        )
+    )
+
+
 #########
 # Teams #
 #########
