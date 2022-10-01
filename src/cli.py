@@ -330,6 +330,40 @@ def repositories_create_codeql_pr(
     )
 
 
+@repositories_cli.command("create_dep_enforcement_pr")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-b",
+    "--branch",
+    prompt="Branch name to create",
+    default="appsec-ghas-dep-enforcement-enable",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def repositories_create_dep_enforcement_pr(
+    repository: str, organization: str, token: str, branch: str
+) -> None:
+    """Create a Dependency enforcement PR"""
+    click.echo(
+        repositories.create_dependency_enforcement_pr(
+            organization, token, repository, target_branch=branch
+        )
+    )
+
+
 #########
 # Teams #
 #########
@@ -561,6 +595,12 @@ def mass_cli() -> None:
     type=click.BOOL,
     prompt="Deploy CodeQL?",
 )
+@click.option(
+    "-r",
+    "--reviewer",
+    type=click.BOOL,
+    prompt="Deploy the Dependency Reviewer?",
+)
 @click.argument("input_repos_list", type=click.File("r"))
 @click.argument("output_csv", type=click.File("a", lazy=True))
 @click.option(
@@ -580,6 +620,7 @@ def mass_deploy(
     pushprotection: bool,
     dependabot: bool,
     codeql: bool,
+    reviewer: bool,
     input_repos_list: Any,
     output_csv: Any,
     organization: str,
@@ -599,7 +640,7 @@ def mass_deploy(
         template_codeql = f.read()
 
     print(
-        f"Enabling Actions ({actions_enable}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}) to {len(repos_list)} repositories."
+        f"Enabling Actions ({actions_enable}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}), Dependency Reviewer ({reviewer}) to {len(repos_list)} repositories."
     )
 
     for repo in repos_list:
@@ -614,6 +655,7 @@ def mass_deploy(
         pushprotection_res = None
         dependabot_res = None
         codeql_res = None
+        reviewer_res = None
 
         print(f"{repo}....", end="")
 
@@ -669,13 +711,18 @@ def mass_deploy(
                     organization=organization,
                     token=token,
                 )
+        if reviewer:
+            reviewer_res = repositories.create_dependency_enforcement_pr(
+                organization, token, repo
+            )
+
         print(
-            f"Done: {actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}"
+            f"Done: {actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}"
         )
         # CSV columns
-        # Organization, repo_name, Actions Enabled?, SS enabled?, PushProtection Enabled?, Dependabot Enabled?, CodeQL enabled?, Issue SS created?, Issue PP created?, Issue Dependabot created?, Issue CodeQL created?
+        # Organization, repo_name, Actions Enabled?, SS enabled?, PushProtection Enabled?, Dependabot Enabled?, CodeQL enabled?, Dep Reviewer Enabled?, Issue SS created?, Issue PP created?, Issue Dependabot created?, Issue CodeQL created?
         output_csv.write(
-            f"{organization},{repo},{actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}\n"
+            f"{organization},{repo},{actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}\n"
         )
 
 
