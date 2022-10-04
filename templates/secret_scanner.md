@@ -16,7 +16,7 @@ We are rolling out Secret Scanning per teams, so if you have only got a informat
 We want to make sure **you** are empowered to maintain the security of your repositories. Thus we count on you to properly react when a secret scanning alert is triggered, following the documentation below:
 
 
-1) [What to do when a secret scanning alert is triggered?](https://confluence...)
+1) [What to do when a secret scanning alert is triggered?](https://malwarebytes.atlassian.net/wiki/spaces/IS/pages/2697920780/How+to+react+to+Secret+Scanner+alerts)
 2) [Managing alerts from Secret Scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/managing-alerts-from-secret-scanning)
 
 
