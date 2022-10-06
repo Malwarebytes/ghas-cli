@@ -1,4 +1,4 @@
-# Secret Scanning enabled :wave: :lock:
+# Secret Scanning Push Protection enabled :wave: :lock:
 
 Hey there!
 
