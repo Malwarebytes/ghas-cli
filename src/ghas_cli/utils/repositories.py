@@ -597,11 +597,22 @@ def create_dependency_enforcement_pr(
     }
 
     # Retry if rate-limited
-    pr_resp = requests.post(
-        url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
-        headers=headers,
-        json=payload,
-    )
+    i = 0
+    while i < 5:
+        pr_resp = requests.post(
+            url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
+            headers=headers,
+            json=payload,
+        )
+
+        if pr_resp.status_code == 200:
+            return True
+
+        if network.check_rate_limit(pr_resp):
+            time.sleep(network.SLEEP_1_MINUTE)
+
+        i += 1
+
     if pr_resp.status_code != 201:
         return False
 
