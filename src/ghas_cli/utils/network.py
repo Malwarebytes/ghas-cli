@@ -5,6 +5,10 @@ from typing import Any, Dict
 import time
 
 
+SLEEP_1_MINUTE = 60
+SLEEP_BETWEEN_REQUESTS = 2
+
+
 def get_github_headers(token: str) -> Dict:
     return {
         "accept": "application/vnd.github+json",
@@ -26,5 +30,5 @@ def check_rate_limit(response: Any) -> bool:
         print("Secondary rate limit reached. Need to wait...")
         return True
 
-    time.sleep(2)
+    time.sleep(SLEEP_BETWEEN_REQUESTS)
     return False

@@ -36,7 +36,8 @@ def create(
             return issue.json()["html_url"]
 
         if network.check_rate_limit(issue):
-            time.sleep(60)
+            time.sleep(network.SLEEP_1_MINUTE)
+
         i += 1
 
     if issue.status_code != 201:
