@@ -5,6 +5,7 @@ from typing import List
 import base64
 import requests
 from . import network
+import time
 
 
 class Repository:
@@ -491,11 +492,22 @@ def create_codeql_pr(
         "base": default_branch,
     }
 
-    pr_resp = requests.post(
-        url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
-        headers=headers,
-        json=payload,
-    )
+    # Retry if rate-limited
+    i = 0
+    while i < network.RETRIES:
+        pr_resp = requests.post(
+            url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
+            headers=headers,
+            json=payload,
+        )
+        if pr_resp.status_code == 201:
+            return True
+
+        if network.check_rate_limit(pr_resp):
+            time.sleep(network.SLEEP_1_MINUTE)
+
+        i += 1
+
     if pr_resp.status_code != 201:
         return False
 
@@ -585,11 +597,23 @@ def create_dependency_enforcement_pr(
         "base": default_branch,
     }
 
-    pr_resp = requests.post(
-        url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
-        headers=headers,
-        json=payload,
-    )
+    # Retry if rate-limited
+    i = 0
+    while i < network.RETRIES:
+        pr_resp = requests.post(
+            url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
+            headers=headers,
+            json=payload,
+        )
+
+        if pr_resp.status_code == 200:
+            return True
+
+        if network.check_rate_limit(pr_resp):
+            time.sleep(network.SLEEP_1_MINUTE)
+
+        i += 1
+
     if pr_resp.status_code != 201:
         return False
 
