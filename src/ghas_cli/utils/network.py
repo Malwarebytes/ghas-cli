@@ -6,7 +6,7 @@ import time
 
 
 SLEEP_1_MINUTE = 60
-SLEEP_BETWEEN_REQUESTS = 0
+SLEEP_BETWEEN_REQUESTS = 2
 
 
 def get_github_headers(token: str) -> Dict:
