@@ -494,7 +494,7 @@ def create_codeql_pr(
 
     # Retry if rate-limited
     i = 0
-    while i < 5:
+    while i < network.RETRIES:
         pr_resp = requests.post(
             url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
             headers=headers,
@@ -599,7 +599,7 @@ def create_dependency_enforcement_pr(
 
     # Retry if rate-limited
     i = 0
-    while i < 5:
+    while i < network.RETRIES:
         pr_resp = requests.post(
             url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
             headers=headers,

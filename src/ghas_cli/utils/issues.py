@@ -27,7 +27,7 @@ def create(
 
     # Retry if rate-limited
     i = 0
-    while i < 5:
+    while i < network.RETRIES:
         issue = requests.post(
             url=f"https://api.github.com/repos/{organization}/{repository}/issues",
             json=data,

@@ -5,8 +5,14 @@ from typing import Any, Dict
 import time
 
 
+# If the rate-limit is reached, sleep X seconds
 SLEEP_1_MINUTE = 60
+
+# Sleep x seconds between two requests
 SLEEP_BETWEEN_REQUESTS = 2
+
+# Number of times to try a network request before failing
+RETRIES = 5
 
 
 def get_github_headers(token: str) -> Dict:
