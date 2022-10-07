@@ -24,13 +24,22 @@ def create(
         "labels": ["info", "security"],
     }
 
-    issue = requests.post(
-        url=f"https://api.github.com/repos/{organization}/{repository}/issues",
-        json=data,
-        headers=headers,
-    )
-    if network.check_rate_limit(issue):
-        return False
+    # Retry if rate-limited
+    i = 0
+    while i < 5:
+        issue = requests.post(
+            url=f"https://api.github.com/repos/{organization}/{repository}/issues",
+            json=data,
+            headers=headers,
+        )
+        if issue.status_code == 201:
+            return issue.json()["html_url"]
+
+        if network.check_rate_limit(issue):
+            time.sleep(60)
+        i += 1
+
     if issue.status_code != 201:
         return False
-    return issue.json()["html_url"]
+    else:
+        return issue.json()["html_url"]

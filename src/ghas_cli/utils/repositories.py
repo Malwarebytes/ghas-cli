@@ -491,6 +491,7 @@ def create_codeql_pr(
         "base": default_branch,
     }
 
+    # Retry if rate-limited
     pr_resp = requests.post(
         url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
         headers=headers,
@@ -585,6 +586,7 @@ def create_dependency_enforcement_pr(
         "base": default_branch,
     }
 
+    # Retry if rate-limited
     pr_resp = requests.post(
         url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
         headers=headers,
