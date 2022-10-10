@@ -469,6 +469,98 @@ def issues_create(
     click.echo(issue)
 
 
+@issues_cli.command("list")
+@click.option(
+    "-c",
+    "--creator",
+    default="mend-for-github-com[bot]",
+    prompt="Creator username",
+)
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def issues_list(
+    creator: str,
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Get issues created by an user on a repository"""
+
+    issues_res = issues.search(
+        creator=creator,
+        repository=repository,
+        organization=organization,
+        token=token,
+    )
+
+    click.echo(issues_res)
+
+
+@issues_cli.command("close_mend")
+@click.option(
+    "-c",
+    "--creator",
+    default="mend-for-github-com[bot]",
+    prompt="Creator username",
+)
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def issues_close_mend(
+    creator: str,
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Close all issues created by a specific user on a repository"""
+
+    issues_res = issues.search(
+        creator=creator,
+        repository=repository,
+        organization=organization,
+        token=token,
+    )
+
+    if not issues_res:
+        return False
+
+    res = issues.close_issues(
+        issue_numbers=issues_res,
+        repository=repository,
+        organization=organization,
+        token=token,
+    )
+
+    click.echo(f"Closed {res} issues from {creator} on {organization}/{repository}.")
+
+
 ###########
 # Secrets #
 ###########
