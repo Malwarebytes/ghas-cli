@@ -606,7 +606,7 @@ def create_dependency_enforcement_pr(
             json=payload,
         )
 
-        if pr_resp.status_code == 200:
+        if pr_resp.status_code == 201:
             return True
 
         if network.check_rate_limit(pr_resp):
