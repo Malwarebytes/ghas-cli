@@ -549,7 +549,7 @@ def issues_close_mend(
     )
 
     if not issues_res:
-        return False
+        return
 
     res = issues.close_issues(
         issue_numbers=issues_res,
