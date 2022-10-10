@@ -827,7 +827,7 @@ def mass_deploy(
             if not issues_res:
                 continue
 
-            res = issues.close_issues(
+            issues.close_issues(
                 issue_numbers=issues_res,
                 repository=repo,
                 organization=organization,
