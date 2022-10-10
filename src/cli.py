@@ -693,6 +693,13 @@ def mass_cli() -> None:
     type=click.BOOL,
     prompt="Deploy the Dependency Reviewer?",
 )
+@click.option(
+    "-m",
+    "--mend",
+    type=click.BOOL,
+    default=False,
+    prompt="Close Mend issues?",
+)
 @click.argument("input_repos_list", type=click.File("r"))
 @click.argument("output_csv", type=click.File("a", lazy=True))
 @click.option(
@@ -713,6 +720,7 @@ def mass_deploy(
     dependabot: bool,
     codeql: bool,
     reviewer: bool,
+    mend: bool,
     input_repos_list: Any,
     output_csv: Any,
     organization: str,
@@ -806,6 +814,24 @@ def mass_deploy(
         if reviewer:
             reviewer_res = repositories.create_dependency_enforcement_pr(
                 organization, token, repo
+            )
+
+        if mend:
+            issues_res = issues.search(
+                creator="mend-for-github-com[bot]",
+                repository=repo,
+                organization=organization,
+                token=token,
+            )
+
+            if not issues_res:
+                continue
+
+            res = issues.close_issues(
+                issue_numbers=issues_res,
+                repository=repo,
+                organization=organization,
+                token=token,
             )
 
         print(
