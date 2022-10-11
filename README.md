@@ -36,6 +36,8 @@ make release
 
 ### Publish a new version
 
+**Requires `syft` to be installed to generate the sbom.**
+
 1. Bump the version number as described above
 2. `make deps` to update the dependencies
 3. `make release` to build the packages
