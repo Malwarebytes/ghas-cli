@@ -825,15 +825,13 @@ def mass_deploy(
                 token=token,
             )
 
-            if not issues_res:
-                continue
-
-            mend_res = issues.close_issues(
-                issue_numbers=issues_res,
-                repository=repo,
-                organization=organization,
-                token=token,
-            )
+            if issues_res:
+                mend_res = issues.close_issues(
+                    issue_numbers=issues_res,
+                    repository=repo,
+                    organization=organization,
+                    token=token,
+                )
 
         print(
             f"Done: {actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}, {mend_res}"
