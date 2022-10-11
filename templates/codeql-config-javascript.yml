@@ -9,5 +9,3 @@ paths-ignore:
   - "test*/**"
   - "**/vendor"
   - "doc*/**"
-  - "**/spec/**"
-  - "**/*_spec.rb"
