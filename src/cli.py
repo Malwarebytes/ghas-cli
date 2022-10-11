@@ -756,6 +756,7 @@ def mass_deploy(
         dependabot_res = None
         codeql_res = None
         reviewer_res = None
+        mend_res = 0
 
         print(f"{repo}....", end="")
 
@@ -827,7 +828,7 @@ def mass_deploy(
             if not issues_res:
                 continue
 
-            issues.close_issues(
+            mend_res = issues.close_issues(
                 issue_numbers=issues_res,
                 repository=repo,
                 organization=organization,
@@ -835,12 +836,12 @@ def mass_deploy(
             )
 
         print(
-            f"Done: {actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}"
+            f"Done: {actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}, {mend_res}"
         )
         # CSV columns
-        # Organization, repo_name, Actions Enabled?, SS enabled?, PushProtection Enabled?, Dependabot Enabled?, CodeQL enabled?, Dep Reviewer Enabled?, Issue SS created?, Issue PP created?, Issue Dependabot created?, Issue CodeQL created?
+        # Organization, repo_name, Actions Enabled?, SS enabled?, PushProtection Enabled?, Dependabot Enabled?, CodeQL enabled?, Dep Reviewer Enabled?, Issue SS created?, Issue PP created?, Issue Dependabot created?, Issue CodeQL created?, Mend issues closed
         output_csv.write(
-            f"{organization},{repo},{actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}\n"
+            f"{organization},{repo},{actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}, {mend_res}\n"
         )
 
 
