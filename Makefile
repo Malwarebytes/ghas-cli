@@ -5,6 +5,7 @@ ZIP = zip
 PIP3 = python3 -m pip
 PYTHON3 = python3
 POETRY = poetry
+SYFT = syft
 
 
 clean: ## clean existing builds
@@ -15,6 +16,7 @@ clean: ## clean existing builds
 
 release: ## Build a wheel
 	$(POETRY) build
+	$(SYFT) packages file:poetry.lock -o spdx-json > dist/sbom.json
 	cd dist && sha512sum * > ../checksums.sha512
 	gpg --detach-sign --armor checksums.sha512
 
