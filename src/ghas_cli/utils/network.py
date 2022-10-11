@@ -19,7 +19,7 @@ def get_github_headers(token: str) -> Dict:
     return {
         "accept": "application/vnd.github+json",
         "authorization": f"Bearer {token}",
-        "User-Agent": "jboursier-mwb/fetch_org_ghas_metrics",
+        "User-Agent": "malwarebytes/bulk_enable_ghas",
     }
 
 
