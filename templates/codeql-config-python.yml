@@ -5,6 +5,6 @@
 # Reach out on Slack at '#github-appsec-security' to get help.
 
 paths-ignore:
-  - "**/*__tests__*"
+  - "**/*__tests__*/**"
   - "*vendor"
   - "docs/*"

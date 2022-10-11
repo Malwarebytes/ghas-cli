@@ -592,7 +592,7 @@ def create_dependency_enforcement_pr(
     # Create PR
     payload = {
         "title": "Dependency reviewer",
-        "body": f"This PR enables the Dependency Reviewer in your repository. It also to prevents vulnerable dependencies from reaching out your codebase. In most cases you will be able to merge this PR as is and start benefiting from its features right away, as a check in each PR. \nHowever, we encourage you to tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team.",
+        "body": f"This PR enables the Dependency Reviewer in your repository. It is enabled to prevent vulnerable dependencies from reaching your codebase. In most cases you will be able to merge this PR as is and start benefiting from its features right away, as a check in each PR. \nHowever, we encourage you to tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team.",
         "head": target_branch,
         "base": default_branch,
     }
