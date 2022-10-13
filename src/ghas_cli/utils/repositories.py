@@ -338,7 +338,7 @@ def get_languages(
         headers=headers,
     )
     if languages.status_code != 200:
-        return []
+        return ["other"]
 
     lang = set()
     for l in languages.json():
@@ -354,7 +354,10 @@ def get_languages(
         else:
             lang.add(l.lower())
 
-    return list(lang)
+    if not lang:
+        return ["other"]
+    else:
+        return list(lang)
 
 
 def load_codeql_base64_template(language: str, default_branch: str = "main") -> tuple:
@@ -465,6 +468,7 @@ def create_codeql_pr(
             headers=headers,
             json=payload,
         )
+
         if commit_resp.status_code != 201:
             return False
 
@@ -477,7 +481,7 @@ def create_codeql_pr(
         }
 
         commit_resp = requests.put(
-            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-config-{lang}.yml",
+            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/codeql/codeql-config-{lang}.yml",
             headers=headers,
             json=payload,
         )
