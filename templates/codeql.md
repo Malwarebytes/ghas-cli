@@ -17,7 +17,7 @@ We are rolling out CodeQL per language/user, so if you have only got a pull requ
 
 Hopefully, you should see a nice green status tick next to CodeQL within the status section of the pull request. However, if you haven't, that's understandable. We have taken the best guess approach at configuring CodeQL for you, but 1) we are still maturing, and 2) codeql can differ repository by repository.
 
-If you have a red X next to CodeQL, that means that CodeQL is not configured for your repository. You may need to go ahead and edit the codeql-analysis.yml file to get it working with your build process/codebase. Some information on that can be found below:
+If you have a red X next to CodeQL, that means that CodeQL is not configured for your repository. You may need to go ahead and edit the `codeql-config-*.yml` file to get it working with your build process/codebase. Some information on that can be found below:
 
 
 
