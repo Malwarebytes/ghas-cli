@@ -338,7 +338,7 @@ def get_languages(
         headers=headers,
     )
     if languages.status_code != 200:
-        return ["other"]
+        return ["default"]
 
     lang = set()
     for l in languages.json():
@@ -355,7 +355,7 @@ def get_languages(
             lang.add(l.lower())
 
     if not lang:
-        return ["other"]
+        return ["default"]
     else:
         return list(lang)
 
