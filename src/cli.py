@@ -18,7 +18,7 @@ except ImportError:
     print("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from ghas_cli.utils import repositories, vulns, teams, issues, actions
+from ghas_cli.utils import repositories, vulns, teams, issues, actions, dependabot
 
 
 def main() -> None:
@@ -581,6 +581,39 @@ def secret_alerts() -> None:
 def dependabot_alerts() -> None:
     """Manage Dependabot alerts"""
     pass
+
+
+@dependabot_alerts.command("list")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def dependabot_alerts_list(
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Get issues created by an user on a repository"""
+
+    dependabot_res = dependabot.list_alerts_repo(
+        repository=repository,
+        organization=organization,
+        token=token,
+    )
+
+    click.echo(dependabot_res)
 
 
 ###########
