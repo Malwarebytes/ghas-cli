@@ -613,7 +613,8 @@ def dependabot_alerts_list(
         token=token,
     )
 
-    click.echo(dependabot_res)
+    for res in dependabot_res:
+        click.echo(res)
 
 
 ###########
