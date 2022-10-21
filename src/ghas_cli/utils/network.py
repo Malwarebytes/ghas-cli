@@ -30,6 +30,7 @@ def check_rate_limit(response: Any) -> bool:
         print(
             f"Rate limit reached: {response.headers['x-ratelimit-remaining']}/{response.headers['x-ratelimit-limit']} - {reset_time}"
         )
+        time.sleep(reset_time)
         return True
 
     if response.status_code == 403:

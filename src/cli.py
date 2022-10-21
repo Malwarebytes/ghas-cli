@@ -162,6 +162,7 @@ def repositories_cli() -> None:
     ),
     default="human",
 )
+@click.argument("output", type=click.File("w"))
 @click.option(
     "-t",
     "--token",
@@ -181,6 +182,7 @@ def repositories_list(
     archived: bool,
     disabled: bool,
     format: str,
+    output: Any,
     organization: str,
     token: str,
 ) -> None:
@@ -198,19 +200,23 @@ def repositories_list(
 
     if "human" == format:
         for r in res:
+            output.write(r + "\n")
             click.echo(r)
     elif "ghas" == format:
         repos = []
         for r in res:
             repos.append(r.to_ghas())
+        output.write(str([{"login": organization, "repos": repos}]) + "\n")
         click.echo([{"login": organization, "repos": repos}])
     elif "json" == format:
         repos = []
         for r in res:
             repos.append(r.to_json())
+        output.write(str(repos) + "\n")
         click.echo(repos)
     elif "list" == format:
         for r in res:
+            output.write(r.name + "\n")
             click.echo(r.name)
 
 
