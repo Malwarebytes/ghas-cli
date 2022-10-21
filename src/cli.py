@@ -10,7 +10,7 @@ __status__ = "Development"
 
 try:
     import click
-    from typing import Dict, Any
+    from typing import Dict, Any, List
     from datetime import datetime
 except ImportError:
     import sys
@@ -586,8 +586,10 @@ def dependabot_alerts() -> None:
 @dependabot_alerts.command("list")
 @click.option(
     "-r",
-    "--repository",
-    prompt="Repository name",
+    "--repos",
+    prompt="Repositories name. Use `all` to retrieve alerts for all repos.",
+    type=str,
+    multiple=True,
 )
 @click.option(
     "-t",
@@ -601,20 +603,21 @@ def dependabot_alerts() -> None:
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
 def dependabot_alerts_list(
-    repository: str,
+    repos: List,
     organization: str,
     token: str,
 ) -> None:
-    """Get issues created by an user on a repository"""
+    """Get Dependabot alerts for a repository"""
 
-    dependabot_res = dependabot.list_alerts_repo(
-        repository=repository,
-        organization=organization,
-        token=token,
-    )
+    for repo in repos:
+        dependabot_res = dependabot.list_alerts_repo(
+            repository=repository,
+            organization=organization,
+            token=token,
+        )
 
-    for res in dependabot_res:
-        click.echo(res)
+        for res in dependabot_res:
+            click.echo(res)
 
 
 ###########
