@@ -57,9 +57,8 @@ Github suggests using [ghas-enablement](https://github.com/NickLiffen/ghas-enabl
     - `ghas-cli` makes sure Actions are enabled before doing anything else. If they're not, it enables them.
 * More broadly, `ghas-cli` creates more educative issues on each repositories. It also provides more flexibility with an extensive CLI to pipe in/out data.
 
-# Resources
 
-Please reach Jérôme Boursier for any issues or question:
 
-* jboursier@malwarebytes.com
-* `jboursier` on Slack
+# Miscellaneous
+
+This repository is provided as-is and isn't bound to Malwarebytes' SLA.
