@@ -181,31 +181,32 @@ def get_org_repositories(
 
             repo = Repository()
             repo.load_json(r, token=token)
+            # repo.load_json(r, token=None)
 
             if language != "" and repo.main_language != language:
-                # print(
-                #    f"{repo.name} ignored because of language: {language} vs. {repo.main_language}"
-                # )
+                print(
+                    f"{repo.name} ignored because of language: {language} vs. {repo.main_language}"
+                )
                 continue
             if default_branch != "" and repo.default_branch != default_branch:
-                # print(
-                #    f"{repo.name} ignored because of default branch: {default_branch} vs. {repo.default_branch}"
-                # )
+                print(
+                    f"{repo.name} ignored because of default branch: {default_branch} vs. {repo.default_branch}"
+                )
                 continue
             if license != "" and repo.license != license:
-                # print(
-                #    f"{repo.name} ignored because of license: {license} vs. {repo.license}"
-                # )
+                print(
+                    f"{repo.name} ignored because of license: {license} vs. {repo.license}"
+                )
                 continue
             if repo.archived != archived:
-                # print(
-                #    f"{repo.name} ignored because of archived: {archived} vs. {repo.archived}"
-                # )
+                print(
+                    f"{repo.name} ignored because of archived: {archived} vs. {repo.archived}"
+                )
                 continue
             if repo.disabled != disabled:
-                # print(
-                #    f"{repo.name} ignored because of license: {archived} vs. {repo.archived}"
-                # )
+                print(
+                    f"{repo.name} ignored because of license: {archived} vs. {repo.archived}"
+                )
                 continue
 
             repos_list.append(repo)
