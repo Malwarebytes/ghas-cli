@@ -10,6 +10,7 @@ __status__ = "Development"
 
 try:
     import click
+    import json
     from typing import Dict, Any
     from datetime import datetime
 except ImportError:
@@ -206,13 +207,13 @@ def repositories_list(
         repos = []
         for r in res:
             repos.append(r.to_ghas())
-        output.write(str([{"login": organization, "repos": repos}]) + "\n")
+        output.write(json.dumps([{"login": organization, "repos": repos}]) + "\n")
         click.echo([{"login": organization, "repos": repos}])
     elif "json" == format:
         repos = []
         for r in res:
             repos.append(r.to_json())
-        output.write(str(repos) + "\n")
+        output.write(json.dumps(repos) + "\n")
         click.echo(repos)
     elif "list" == format:
         for r in res:
