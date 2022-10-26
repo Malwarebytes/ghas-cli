@@ -6,7 +6,7 @@
 #
 # Reach out on Slack at '#github-appsec-security' to get help.
 
-name: "CodeQL"
+name: "CodeQL - Javascript"
 
 on:
   push:
