@@ -8,13 +8,13 @@ It allows to deploy GHAS features individually or at scale, while taking into ac
 
 More specifically, it automates the following:
 
-* Ensuring Github Actions are properly enabled for the repository (required for CodeQL),
+* Ensure Github Actions are properly enabled for the repository (required for CodeQL),
 * Enable [Secret Scanner](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/about-secret-scanning), and create an informative issue
 * Enable [Push Protection](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/protecting-pushes-with-secret-scanning), and create an informative issue
 * Enable [Dependabot](https://docs.github.com/en/enterprise-cloud@latest/code-security/dependabot/working-with-dependabot) and create an informative issue
 * Enable the [Dependency Reviewer](https://docs.github.com/en/enterprise-cloud@latest/code-security/supply-chain-security/about-dependency-review) and create an informative issue
 * Open a PR to deploy [Code Scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning) with a custom configuration tuned for each repository's languages and _non-main default branch_ (e.g `main` or `master` are not hardcoded, it determines the proper default branch automatically),
-* Close legacy Mend issues automatically on each repository
+* Cleanup legacy Mend issues on each repository
 
 
 Each of these actions can also open an issue explaining each feature, how to use them, and what to eventually do before they are fully enabled.
