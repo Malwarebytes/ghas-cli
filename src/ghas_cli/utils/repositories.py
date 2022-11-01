@@ -365,7 +365,7 @@ def load_codeql_base64_template(language: str, default_branch: str = "main") -> 
     language = language.lower()
     try:
         with open(f"./templates/codeql-analysis-{language.lower()}.yml", "r") as f:
-            # Ugly af but `yaml` transforms `on:` to `True:` which is obviously annoying to parse Github Actions files..
+            # Ugly af but `yaml` transforms `on:` to `True:` which is obviously annoying to parse GitHub Actions files..
             template = f.readlines()
             template_new = ""
             for l in template:
