@@ -29,6 +29,14 @@ You can work on a single repository or on thousands of them. In that case, `ghas
 
 Builds are available in the [`Releases`](https://github.com/Malwarebytes/Security-ghas-cli/releases) tab.
 
+* Pypi:
+
+```bash
+pip install ghas-cli
+```
+
+* Manually:
+
 ```bash
 python -m pip install /full/path/to/ghas-cli-xxx.whl
 
