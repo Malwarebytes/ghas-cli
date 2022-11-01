@@ -31,7 +31,7 @@ def main() -> None:
 
 @click.group()
 def cli() -> None:
-    """ghas-cli is a Python3 utility to interact with Github Advanced Security.
+    """ghas-cli is a Python3 utility to interact with GitHub Advanced Security.
 
     Get help: `@jboursier` on Slack
     """

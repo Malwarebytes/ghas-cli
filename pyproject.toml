@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "ghas-cli"
 version = "1.2.0"
-description = "Command line interface to interact with Github Advanced Security."
+description = "Command line interface to interact with GitHub Advanced Security."
 authors = ["jboursier <jboursier@malwarebytes.com>"]
 license = "MIT"
 readme = "README.md"
