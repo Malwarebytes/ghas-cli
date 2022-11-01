@@ -20,6 +20,9 @@ release: ## Build a wheel
 	cd dist && sha512sum * > ../checksums.sha512
 	gpg --detach-sign --armor checksums.sha512
 
+dev: ## Build for dev
+	$(POETRY) build
+
 shell: ## Generate the shell autocompletion
 	_GHAS_CLI_COMPLETE=source_bash ghas-cli > ghas-cli-complete.sh || true
 

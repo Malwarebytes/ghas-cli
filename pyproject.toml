@@ -1,15 +1,16 @@
 [tool.poetry]
 name = "ghas-cli"
 version = "1.1.0"
-description = "Python3 command line interface to interact with Github Advanced Security."
+description = "Command line interface to interact with Github Advanced Security."
 authors = ["jboursier <jboursier@malwarebytes.com>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://malwarebytes.com"
-repository = "https://github.com/Malwarebytes/Security-ghash-cli"
+documentation = "https://github.com/Malwarebytes/ghas-cli/wiki"
+repository = "https://github.com/Malwarebytes/ghash-cli"
 keywords = ["security", "cli", "github", "utility"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",

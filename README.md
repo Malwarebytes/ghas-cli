@@ -47,13 +47,13 @@ python -m pip install /full/path/to/ghas-cli-xxx.whl
 [Install Poetry](https://python-poetry.org/docs/#installation) first, then:
 
 ```bash
-make release
+make dev
 ```
 
 ### Bump the version number
 
-* Update the `version` field in `pyproject.toml`.
-* Update the `__version__` field in `src/cli.py`.
+* Bump the version number: `poetry version x.x.x`
+* Update the `__version__` field in `src/cli.py` accordingly.
 
 ### Publish a new version
 
@@ -64,6 +64,7 @@ make release
 3. `make release` to build the packages
 4. `git commit -a -S Bump to version 1.1.2` and `git tag -s v1.1.2 -m "1.1.2"`
 5. Upload `dist/*`, `checksums.sha512` and `checksums.sha512.asc` to a new release in Github.
+6. Upload to [PyPi](https://pypi.org/project/ghas-cli/): `poetry publish`.
 
 
 ## Why not use `ghas-enablement`?
