@@ -47,13 +47,13 @@ python -m pip install /full/path/to/ghas-cli-xxx.whl
 [Install Poetry](https://python-poetry.org/docs/#installation) first, then:
 
 ```bash
-make release
+make dev
 ```
 
 ### Bump the version number
 
-* Update the `version` field in `pyproject.toml`.
-* Update the `__version__` field in `src/cli.py`.
+* Bump the version number: `poetry version x.x.x`
+* Update the `__version__` field in `src/cli.py` accordingly.
 
 ### Publish a new version
 
