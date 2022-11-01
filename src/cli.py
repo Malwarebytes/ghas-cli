@@ -3,10 +3,10 @@
 
 __author__ = "jboursier"
 __copyright__ = "Copyright 2022, Malwarebytes"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __maintainer__ = "jboursier"
 __email__ = "jboursier@malwarebytes.com"
-__status__ = "Development"
+__status__ = "Production"
 
 try:
     import click
