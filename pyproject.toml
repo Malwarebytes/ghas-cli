@@ -5,9 +5,9 @@ description = "Command line interface to interact with Github Advanced Security.
 authors = ["jboursier <jboursier@malwarebytes.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://malwarebytes.com"
+homepage = "https://github.com/Malwarebytes/ghash-cli"
 documentation = "https://github.com/Malwarebytes/ghas-cli/wiki"
-repository = "https://github.com/Malwarebytes/ghash-cli"
+repository = "https://github.com/Malwarebytes/ghas-cli"
 keywords = ["security", "cli", "github", "utility"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
