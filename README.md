@@ -64,6 +64,7 @@ make dev
 3. `make release` to build the packages
 4. `git commit -a -S Bump to version 1.1.2` and `git tag -s v1.1.2 -m "1.1.2"`
 5. Upload `dist/*`, `checksums.sha512` and `checksums.sha512.asc` to a new release in Github.
+6. Upload to [PyPi](https://pypi.org/project/ghas-cli/): `poetry publish`.
 
 
 ## Why not use `ghas-enablement`?
