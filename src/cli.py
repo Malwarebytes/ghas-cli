@@ -11,7 +11,7 @@ __status__ = "Production"
 try:
     import click
     import json
-    from typing import Dict, Any
+    from typing import Dict, Any, List
     from datetime import datetime
 except ImportError:
     import sys
@@ -19,7 +19,7 @@ except ImportError:
     print("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from ghas_cli.utils import repositories, vulns, teams, issues, actions
+from ghas_cli.utils import repositories, vulns, teams, issues, actions, roles
 
 
 def main() -> None:
@@ -650,6 +650,116 @@ def actions_set_permissions(
     )
 
     click.echo(permissions)
+
+
+###############
+# Roles #
+###############
+
+
+@cli.group(name="roles")
+def roles_cli() -> None:
+    """Manage roles"""
+    pass
+
+
+@roles_cli.command("add")
+@click.option(
+    "-n",
+    "--name",
+    type=click.STRING,
+    prompt="Role name",
+)
+@click.option(
+    "-d",
+    "--description",
+    type=click.STRING,
+    prompt="Description",
+)
+@click.option(
+    "-b",
+    "--base_role",
+    type=click.STRING,
+    prompt="Base role",
+)
+@click.option(
+    "-p",
+    "--permission",
+    type=click.STRING,
+    prompt="Additional permission",
+    multiple=True,
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def roles_add(
+    name: str,
+    description: str,
+    base_role: str,
+    permission: List,
+    organization: str,
+    token: str,
+) -> None:
+
+    if roles.create_role(
+        name, description, base_role, permissions, organization, token
+    ):
+        click.echo(f"Custom role {name} created with success!")
+    else:
+        click.echo(f"Failure to create the custom role {name}.")
+
+
+@roles_cli.command("assign")
+@click.option(
+    "-n",
+    "--name",
+    type=click.STRING,
+    prompt="Team name",
+)
+@click.option(
+    "-p",
+    "--permission",
+    type=click.STRING,
+    prompt="Role to assign",
+)
+@click.option(
+    "-r",
+    "--repository",
+    type=click.STRING,
+    prompt="Repository",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def roles_assign(
+    name: str, permission: str, repository: str, organization: str, token: str
+):
+    if roles.assign_role(
+        team=name,
+        role=permission,
+        repository=repository,
+        organization=organization,
+        token=token,
+    ):
+        click.echo(f"Assigned {permission} to {name} with success.")
+    else:
+        click.echo(f"Failure to assign {permission} to {name}.")
 
 
 ###############
