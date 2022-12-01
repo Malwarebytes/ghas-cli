@@ -609,7 +609,6 @@ def secret_alerts_export(
         output_csv.write(
             f"{secret['state']}, {secret['resolution']}, {secret['resolved_at']}, {secret['repository_full_name']}, {secret['url']}, {secret['secret_type']}, {secret['secret']}\n"
         )
-    pass
 
 
 ##############
