@@ -53,19 +53,20 @@ def list(organization: str, token: str) -> str:
 
         params = {"per_page": 100, "page": page}
 
-        teams = requests.get(
+        teams_res = requests.get(
             url=f"https://api.github.com/orgs/{organization}/teams",
             params=params,
             headers=headers,
         )
-        if network.check_rate_limit(teams):
+        if network.check_rate_limit(teams_res):
             break
-        if teams.status_code != 200:
-            break
-        if [] == teams.json():
+        if teams_res.status_code != 200:
             break
 
-        teams = teams.json()
+        if [] == teams_res.json():
+            break
+
+        teams = teams_res.json()
         for team in teams:
             teams_list.append(team["slug"])
 
