@@ -403,6 +403,16 @@ def teams_list(organization: str, token: str) -> None:
 @click.option("-o", "--organization", prompt="Organization name", type=str)
 @click.option("-s", "--team", prompt="Team slug", type=str)
 @click.option(
+    "-f",
+    "--format",
+    prompt="Output format",
+    type=click.Choice(
+        ["human", "ghas", "json", "list"],
+        case_sensitive=False,
+    ),
+    default="human",
+)
+@click.option(
     "-t",
     "--token",
     prompt=False,
@@ -412,13 +422,26 @@ def teams_list(organization: str, token: str) -> None:
     confirmation_prompt=False,
     show_envvar=True,
 )
-def teams_get_repositories(organization: str, team: str, token: str) -> None:
+def teams_get_repositories(
+    organization: str, team: str, token: str, format: str
+) -> None:
     """List repositories for a specific team"""
     team_repos = teams.get_repositories(
         team_slug=team, organization=organization, token=token
     )
-    for repo in team_repos:
-        click.echo(f"{team}: {repo}")
+
+    if "human" == format:
+        for repo in team_repos:
+            click.echo(f"{team}: {repo}")
+    elif "ghas" == format:
+        for repo in team_repos:
+            click.echo(repo.to_ghas())
+    elif "json" == format:
+        for repo in team_repos:
+            click.echo(repo.to_json())
+    elif "list" == format:
+        for repo in team_repos:
+            click.echo(f"{repo.orga}/{repo.name}")
 
 
 ##########
