@@ -4,7 +4,6 @@
 from typing import List
 import requests
 from . import network
-import time
 
 
 # https://docs.github.com/en/rest/orgs/custom-roles#create-a-custom-role
