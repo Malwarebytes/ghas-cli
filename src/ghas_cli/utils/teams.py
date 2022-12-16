@@ -73,3 +73,29 @@ def list(organization: str, token: str) -> str:
         page += 1
 
     return teams_list
+
+
+def get_repo_perms(team: str, repo: str, organization: str, token: str) -> List:
+    """Get Teams permissions over a specific repository
+    Returns [permissions, role_name]
+    """
+
+    headers = network.get_github_headers(token)
+
+    headers["accept"] = "application/vnd.github.v3.repository+json"
+    teams_res = requests.get(
+        url=f"https://api.github.com/orgs/{organization}/teams/{team}/repos/{organization}/{repo}",
+        headers=headers,
+    )
+    print(teams_res.status_code)
+    if network.check_rate_limit(teams_res):
+        return []
+    if teams_res.status_code != 200:
+        return []
+
+    if [] == teams_res.json():
+        return []
+
+    # print(teams_res.json())
+
+    return [teams_res.json()["permissions"], teams_res.json()["role_name"]]

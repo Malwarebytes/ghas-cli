@@ -444,6 +444,31 @@ def teams_get_repositories(
             click.echo(f"{repo.orga}/{repo.name}")
 
 
+@teams_cli.command("permissions")
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option("-s", "--team", prompt="Team slug", type=str)
+@click.option("-r", "--repository", prompt="Repository name", type=str)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+def teams_get_permissions(
+    organization: str, team: str, repository: str, token: str
+) -> None:
+    """List permissions for a specific team for a repository"""
+    team_repo_perms = teams.get_repo_perms(
+        team=team, repo=repository, organization=organization, token=token
+    )
+
+    click.echo(team_repo_perms)
+
+
 ##########
 # Issues #
 ##########
@@ -752,6 +777,7 @@ def roles_add(
     "--permission",
     type=click.STRING,
     prompt="Role to assign",
+    default="Developer",
 )
 @click.option(
     "-r",

@@ -38,14 +38,15 @@ def assign_role(team: str, role: str, repository: str, organization: str, token:
     headers = network.get_github_headers(token)
 
     payload = {
-        "permissions": role,
+        "permission": role,
     }
 
     role_resp = requests.put(
-        url=f"https://api.github.com/orgs/{organization}/teans/{team}/repos/{organization}/{repository}",
+        url=f"https://api.github.com/orgs/{organization}/teams/{team}/repos/{organization}/{repository}",
         headers=headers,
         json=payload,
     )
+    print(role_resp.status_code)
 
     if role_resp.status_code != 204:
         return False
