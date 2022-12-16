@@ -3,7 +3,7 @@
 
 __author__ = "jboursier"
 __copyright__ = "Copyright 2022, Malwarebytes"
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 __maintainer__ = "jboursier"
 __email__ = "jboursier@malwarebytes.com"
 __status__ = "Production"
@@ -19,7 +19,7 @@ except ImportError:
     print("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from ghas_cli.utils import repositories, vulns, teams, issues, actions, roles
+from ghas_cli.utils import repositories, vulns, teams, issues, actions, roles, secrets
 
 
 def main() -> None:
@@ -621,10 +621,42 @@ def issues_close_mend(
 ###########
 
 
-@cli.group()
-def secret_alerts() -> None:
+@cli.group(name="secrets")
+def secret_alerts_cli() -> None:
     """Manage Secret Scanner alerts"""
     pass
+
+
+@secret_alerts_cli.command("export")
+@click.option(
+    "-s",
+    "--state",
+    type=click.Choice(["open", "resolved"]),
+    default="open",
+    prompt="Secrets state",
+)
+@click.argument("output_csv", type=click.File("a", lazy=True))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def secret_alerts_export(
+    state: str, output_csv: Any, token: str, organization: str
+) -> None:
+    """Export secrets to a csv"""
+
+    secrets_list = secrets.export_secrets(state, token, organization)
+    for secret in secrets_list:
+        output_csv.write(
+            f"{secret['state']}, {secret['resolution']}, {secret['resolved_at']}, {secret['repository_full_name']}, {secret['url']}, {secret['secret_type']}, {secret['secret']}\n"
+        )
 
 
 ##############
