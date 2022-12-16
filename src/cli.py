@@ -1041,5 +1041,66 @@ def mass_deploy(
         )
 
 
+@mass_cli.command("set_developer_role")
+@click.option(
+    "-p",
+    "--permission",
+    type=click.STRING,
+    prompt="Role to assign",
+    default="Developer",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_set_developer_role(permission: str, token: str, organization: str) -> None:
+    """Convert all teams with `Write` access to `Developer` on all repository they have `Write` access to.
+
+    1. List teams
+    2. List their repository
+    3. Get permissions and only filter the ones with `Write` role_name
+    4. Assign `Developer` role
+    """
+
+    write_perms = []
+
+    # List teams
+    teams_list = teams.list(organization, token)
+    # print(teams_list)
+    # List team's repositories
+    for team in teams_list:
+        team_repos = teams.get_repositories(team, organization, token)
+
+        # List teams' permissions + filter only Write
+        for repo in team_repos:
+            perms = teams.get_repo_perms(team, repo.name, organization, token)
+            if "write" == perms[-1]:
+                write_perms.append([team, repo.name, perms[-1]])
+                print([team, repo.name, perms[-1]])
+
+    print(write_perms)
+    # Assign Developer
+    for perms in write_perms:
+        if roles.assign_role(
+            team=perms[0],
+            role=permission,
+            repository=perms[1],
+            organization=organization,
+            token=token,
+        ):
+            click.echo(f"Assigned {permission} to {name} with success.")
+        else:
+            click.echo(f"Failure to assign {permission} to {name}.")
+
+    return None
+
+
 if __name__ == "__main__":
     main()
