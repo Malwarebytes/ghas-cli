@@ -1049,6 +1049,8 @@ def mass_deploy(
     prompt="Role to assign",
     default="Developer",
 )
+@click.argument("input_perms_list", type=click.File("r"))
+@click.argument("output_perms_list", type=click.File("a", lazy=True))
 @click.option(
     "-t",
     "--token",
@@ -1060,7 +1062,13 @@ def mass_deploy(
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
-def mass_set_developer_role(permission: str, token: str, organization: str) -> None:
+def mass_set_developer_role(
+    permission: str,
+    input_perms_list: Any,
+    output_perms_list: Any,
+    token: str,
+    organization: str,
+) -> None:
     """Convert all teams with `Write` access to `Developer` on all repository they have `Write` access to.
 
     1. List teams
@@ -1071,23 +1079,33 @@ def mass_set_developer_role(permission: str, token: str, organization: str) -> N
 
     write_perms = []
 
-    # List teams
-    teams_list = teams.list(organization, token)
-    # print(teams_list)
-    # List team's repositories
-    for team in teams_list:
-        team_repos = teams.get_repositories(team, organization, token)
+    input_perms = input_perms_list.readlines()
+    for perms in input_perms:
+        perms = perms.rstrip("\n").split(",")
+        write_perms.append([perms[0].strip(" "), perms[1].strip(" "), perms[2]])
 
-        # List teams' permissions + filter only Write
-        for repo in team_repos:
-            perms = teams.get_repo_perms(team, repo.name, organization, token)
-            if "write" == perms[-1]:
-                write_perms.append([team, repo.name, perms[-1]])
-                print([team, repo.name, perms[-1]])
+    print(len(write_perms))
+    if len(write_perms) < 1:
+        print("write_perms empty, recreating")
+        # List teams
+        teams_list = teams.list(organization, token)
+        # print(teams_list)
+        # List team's repositories
+        for team in teams_list:
+            team_repos = teams.get_repositories(team, organization, token)
 
-    print(write_perms)
+            # List teams' permissions + filter only Write
+            for repo in team_repos:
+                perms = teams.get_repo_perms(team, repo.name, organization, token)
+                if "write" == perms[-1]:
+                    write_perms.append([team, repo.name, perms[-1]])
+                    print([team, repo.name, perms[-1]])
+                    output_perms_list.write(f"{team}, {repo.name}, {perms[-1]}\n")
+
+    # print(write_perms)
     # Assign Developer
     for perms in write_perms:
+        print(perms)
         if roles.assign_role(
             team=perms[0],
             role=permission,
@@ -1095,9 +1113,11 @@ def mass_set_developer_role(permission: str, token: str, organization: str) -> N
             organization=organization,
             token=token,
         ):
-            click.echo(f"Assigned {permission} to {name} with success.")
+            click.echo(
+                f"Assigned {permission} to {perms[0]} on {perms[1]} with success."
+            )
         else:
-            click.echo(f"Failure to assign {permission} to {name}.")
+            click.echo(f"Failure to assign {permission} to {perms[0]} on {perms[1]}.")
 
     return None
 

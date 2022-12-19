@@ -98,6 +98,6 @@ def get_repo_perms(team: str, repo: str, organization: str, token: str) -> List:
     if [] == teams_res.json():
         return []
 
-    print(teams_res.json()["role_name"])
+    # print(teams_res.json()["role_name"])
 
     return [teams_res.json()["permissions"], teams_res.json()["role_name"]]

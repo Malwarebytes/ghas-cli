@@ -46,7 +46,6 @@ def assign_role(team: str, role: str, repository: str, organization: str, token:
         headers=headers,
         json=payload,
     )
-    print(role_resp.status_code)
 
     if role_resp.status_code != 204:
         return False
