@@ -10,7 +10,6 @@ name: "CodeQL - Javascript"
 
 on:
   push:
-    branches: ["main"]
   pull_request:
     branches: ["main"]
   schedule:

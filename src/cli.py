@@ -11,7 +11,7 @@ __status__ = "Production"
 try:
     import click
     import json
-    from typing import Dict, Any
+    from typing import Dict, Any, List
     from datetime import datetime
 except ImportError:
     import sys
@@ -19,7 +19,7 @@ except ImportError:
     print("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from ghas_cli.utils import repositories, vulns, teams, issues, actions, secrets
+from ghas_cli.utils import repositories, vulns, teams, issues, actions, roles, secrets
 
 
 def main() -> None:
@@ -403,6 +403,16 @@ def teams_list(organization: str, token: str) -> None:
 @click.option("-o", "--organization", prompt="Organization name", type=str)
 @click.option("-s", "--team", prompt="Team slug", type=str)
 @click.option(
+    "-f",
+    "--format",
+    prompt="Output format",
+    type=click.Choice(
+        ["human", "ghas", "json", "list"],
+        case_sensitive=False,
+    ),
+    default="human",
+)
+@click.option(
     "-t",
     "--token",
     prompt=False,
@@ -412,13 +422,51 @@ def teams_list(organization: str, token: str) -> None:
     confirmation_prompt=False,
     show_envvar=True,
 )
-def teams_get_repositories(organization: str, team: str, token: str) -> None:
+def teams_get_repositories(
+    organization: str, team: str, token: str, format: str
+) -> None:
     """List repositories for a specific team"""
     team_repos = teams.get_repositories(
         team_slug=team, organization=organization, token=token
     )
-    for repo in team_repos:
-        click.echo(f"{team}: {repo}")
+
+    if "human" == format:
+        for repo in team_repos:
+            click.echo(f"{team}: {repo}")
+    elif "ghas" == format:
+        for repo in team_repos:
+            click.echo(repo.to_ghas())
+    elif "json" == format:
+        for repo in team_repos:
+            click.echo(repo.to_json())
+    elif "list" == format:
+        for repo in team_repos:
+            click.echo(f"{repo.orga}/{repo.name}")
+
+
+@teams_cli.command("permissions")
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option("-s", "--team", prompt="Team slug", type=str)
+@click.option("-r", "--repository", prompt="Repository name", type=str)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+def teams_get_permissions(
+    organization: str, team: str, repository: str, token: str
+) -> None:
+    """List permissions for a specific team for a repository"""
+    team_repo_perms = teams.get_repo_perms(
+        team=team, repo=repository, organization=organization, token=token
+    )
+
+    click.echo(team_repo_perms)
 
 
 ##########
@@ -685,6 +733,117 @@ def actions_set_permissions(
 
 
 ###############
+# Roles #
+###############
+
+
+@cli.group(name="roles")
+def roles_cli() -> None:
+    """Manage roles"""
+    pass
+
+
+@roles_cli.command("add")
+@click.option(
+    "-n",
+    "--name",
+    type=click.STRING,
+    prompt="Role name",
+)
+@click.option(
+    "-d",
+    "--description",
+    type=click.STRING,
+    prompt="Description",
+)
+@click.option(
+    "-b",
+    "--base_role",
+    type=click.STRING,
+    prompt="Base role",
+)
+@click.option(
+    "-p",
+    "--permission",
+    type=click.STRING,
+    prompt="Additional permission",
+    multiple=True,
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def roles_add(
+    name: str,
+    description: str,
+    base_role: str,
+    permission: List,
+    organization: str,
+    token: str,
+) -> None:
+
+    if roles.create_role(
+        name, description, base_role, permissions, organization, token
+    ):
+        click.echo(f"Custom role {name} created with success!")
+    else:
+        click.echo(f"Failure to create the custom role {name}.")
+
+
+@roles_cli.command("assign")
+@click.option(
+    "-n",
+    "--name",
+    type=click.STRING,
+    prompt="Team name",
+)
+@click.option(
+    "-p",
+    "--permission",
+    type=click.STRING,
+    prompt="Role to assign",
+    default="Developer",
+)
+@click.option(
+    "-r",
+    "--repository",
+    type=click.STRING,
+    prompt="Repository",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def roles_assign(
+    name: str, permission: str, repository: str, organization: str, token: str
+):
+    if roles.assign_role(
+        team=name,
+        role=permission,
+        repository=repository,
+        organization=organization,
+        token=token,
+    ):
+        click.echo(f"Assigned {permission} to {name} with success.")
+    else:
+        click.echo(f"Failure to assign {permission} to {name}.")
+
+
+###############
 # Mass deploy #
 ###############
 
@@ -880,6 +1039,87 @@ def mass_deploy(
         output_csv.write(
             f"{organization},{repo},{actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}, {mend_res}\n"
         )
+
+
+@mass_cli.command("set_developer_role")
+@click.option(
+    "-p",
+    "--permission",
+    type=click.STRING,
+    prompt="Role to assign",
+    default="Developer",
+)
+@click.argument("input_perms_list", type=click.File("r"))
+@click.argument("output_perms_list", type=click.File("a", lazy=True))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_set_developer_role(
+    permission: str,
+    input_perms_list: Any,
+    output_perms_list: Any,
+    token: str,
+    organization: str,
+) -> None:
+    """Convert all teams with `Write` access to `Developer` on all repository they have `Write` access to.
+
+    1. List teams
+    2. List their repository
+    3. Get permissions and only filter the ones with `Write` role_name
+    4. Assign `Developer` role
+    """
+
+    write_perms = []
+
+    input_perms = input_perms_list.readlines()
+    for perms in input_perms:
+        perms = perms.rstrip("\n").split(",")
+        write_perms.append([perms[0].strip(" "), perms[1].strip(" "), perms[2]])
+
+    print(len(write_perms))
+    if len(write_perms) < 1:
+        print("write_perms empty, recreating")
+        # List teams
+        teams_list = teams.list(organization, token)
+        # print(teams_list)
+        # List team's repositories
+        for team in teams_list:
+            team_repos = teams.get_repositories(team, organization, token)
+
+            # List teams' permissions + filter only Write
+            for repo in team_repos:
+                perms = teams.get_repo_perms(team, repo.name, organization, token)
+                if "write" == perms[-1]:
+                    write_perms.append([team, repo.name, perms[-1]])
+                    print([team, repo.name, perms[-1]])
+                    output_perms_list.write(f"{team}, {repo.name}, {perms[-1]}\n")
+
+    # print(write_perms)
+    # Assign Developer
+    for perms in write_perms:
+        print(perms)
+        if roles.assign_role(
+            team=perms[0],
+            role=permission,
+            repository=perms[1],
+            organization=organization,
+            token=token,
+        ):
+            click.echo(
+                f"Assigned {permission} to {perms[0]} on {perms[1]} with success."
+            )
+        else:
+            click.echo(f"Failure to assign {permission} to {perms[0]} on {perms[1]}.")
+
+    return None
 
 
 if __name__ == "__main__":

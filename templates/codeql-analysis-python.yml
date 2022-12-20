@@ -10,7 +10,6 @@ name: "CodeQL - Python"
 
 on:
   push:
-    branches: ["main"]
   pull_request:
     branches: ["main"]
   schedule:
