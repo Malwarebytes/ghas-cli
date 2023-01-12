@@ -403,7 +403,7 @@ def repositories_archivable(
     output: Any,
     organization: str,
     token: str,
-) -> None:
+) -> bool:
     """Find potentially archivable repositories"""
 
     try:
@@ -455,6 +455,8 @@ def repositories_archivable(
         elif "list" == format:
             output.write(repo.name + "\n")
             click.echo(repo.name)
+
+    return True
 
 
 @repositories_cli.command("archive")
