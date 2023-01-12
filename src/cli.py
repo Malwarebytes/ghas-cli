@@ -1094,7 +1094,7 @@ Due to inactivity, this repository will be archived automatically on {archived_d
 
 For more information, see https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories#about-repository-archival
 
-If you think this is a mistake, please informthe Security team *ASAP* on Slack at `#github-appsec-security.`
+If you think this is a mistake, please inform the Security team *ASAP* on Slack at `#github-appsec-security.`
 
 Thanks! :handshake:""",
             repository=repo,
