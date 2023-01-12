@@ -408,7 +408,7 @@ def repositories_archivable(
 
     try:
         threshold_date = datetime.strptime(last_updated_before, "%Y-%m-%d")
-    except:
+    except Exception:
         click.echo(f"Invalid time: {last_updated_before}")
         return False
 
