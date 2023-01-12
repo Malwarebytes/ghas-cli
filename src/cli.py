@@ -414,7 +414,7 @@ def repositories_archivable(
 
     # 1. Get list of non-archived repositories
     res = repositories.get_org_repositories(
-        status="public",
+        status="all",
         organization=organization,
         token=token,
         language="",
