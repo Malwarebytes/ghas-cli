@@ -1019,5 +1019,41 @@ def mass_deploy(
         )
 
 
+@mass_cli.command("archive")
+@click.argument("input_repos_list", type=click.File("r"))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_deploy(
+    input_repos_list: Any,
+    organization: str,
+    token: str,
+) -> None:
+    """Mass archive a list of repositories"""
+
+    repos_list = input_repos_list.readlines()
+
+    for repo in repos_list:
+
+        repo = repo.rstrip("\n")
+
+        click.echo(f"{repo}...", nl=False)
+
+        if repositories.archive(
+            organization=organization, token=token, repository=repo
+        ):
+            click.echo(" Archived.")
+        else:
+            click.echo(" Not Archived.", err=True)
+
+
 if __name__ == "__main__":
     main()
