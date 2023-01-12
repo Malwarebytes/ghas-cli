@@ -425,7 +425,6 @@ def repositories_archivable(
     )
 
     for repo in res:
-        print(f"default branch: {repo.default_branch}")
 
         branch_last_commit_date = repositories.get_default_branch_last_updated(
             token=token,
@@ -435,8 +434,6 @@ def repositories_archivable(
         )
         if not branch_last_commit_date:
             return False
-
-        click.echo(f"{branch_last_commit_date}, {threshold_date}")
 
         if branch_last_commit_date > threshold_date:
             continue
