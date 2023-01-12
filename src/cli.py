@@ -1009,12 +1009,12 @@ def mass_deploy(
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
-def mass_deploy(
+def mass_issue_archive(
     input_repos_list: Any,
     organization: str,
     token: str,
 ) -> None:
-    """Mass archive a list of repositories"""
+    """Create an issue to inform that repositories will be archived at a specific date."""
 
     repos_list = input_repos_list.readlines()
 
@@ -1030,6 +1030,55 @@ def mass_deploy(
             click.echo(" Archived.")
         else:
             click.echo(" Not Archived.", err=True)
+
+
+@mass_cli.command("issue_upcoming_archive")
+@click.argument("input_repos_list", type=click.File("r"))
+@click.option(
+    "-u",
+    "--archived_date",
+    prompt="Target date when the repositories will be archived",
+    type=str,
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_archive(
+    input_repos_list: Any,
+    archived_date: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Mass archive a list of repositories"""
+
+    repos_list = input_repos_list.readlines()
+
+    for repo in repos_list:
+
+        repo = repo.rstrip("\n")
+
+        issue_creation = issues.create(
+            title=f"This repository will be archived on {archived_date}  :warning: :wastebasket:",
+            content=f"""
+Hello,
+
+Due to inactivity, this repository will be archived automatically on {archived_date}.
+
+If you think this is a mistake, please informthe Security team *ASAP* on Slack at `#github-appsec-security.`
+
+Thanks! :handshake:""",
+            repository=repo,
+            organization=organization,
+            token=token,
+        )
 
 
 if __name__ == "__main__":
