@@ -1088,7 +1088,7 @@ def mass_archive(
 
         repo = repo.rstrip("\n")
 
-        issue_creation = issues.create(
+        issues.create(
             title=f"This repository will be archived on {archived_date}  :warning: :wastebasket:",
             content=f"""
 Hello,
