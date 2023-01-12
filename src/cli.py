@@ -1062,7 +1062,7 @@ def mass_archive(
 
         repo = repo.rstrip("\n")
 
-        issues.create(
+        issue_res = issues.create(
             title=f"This repository will be archived on {archived_date}  :warning: :wastebasket:",
             content=f"""
 Hello,
@@ -1078,6 +1078,10 @@ Thanks! :handshake:""",
             organization=organization,
             token=token,
         )
+        if issue_res:
+            click.echo(f"{repo}... {issue_res}")
+        else:
+            click.echo(f"{repo}... Failure", err=True)
 
 
 if __name__ == "__main__":
