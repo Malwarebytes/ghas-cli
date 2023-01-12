@@ -457,6 +457,32 @@ def repositories_archivable(
             click.echo(repo.name)
 
 
+@repositories_cli.command("archive")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def repositories_archive(
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Archive a repository"""
+    click.echo(repositories.archive(organization, token, repository))
+
+
 #########
 # Teams #
 #########

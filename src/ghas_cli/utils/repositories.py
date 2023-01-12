@@ -240,6 +240,23 @@ def get_default_branch_last_updated(
     )
 
 
+def archive(organization: str, token: str, repository: str) -> bool:
+    headers = network.get_github_headers(token)
+
+    payload = {"archived": True}
+
+    status = requests.patch(
+        url=f"https://api.github.com/repos/{organization}/{repository}",
+        headers=headers,
+        json=payload,
+    )
+
+    if status.status_code != 200:
+        return False
+    else:
+        return True
+
+
 def check_dependabot_alerts_enabled(
     token: str, organization: str, repository_name: str
 ) -> bool:
