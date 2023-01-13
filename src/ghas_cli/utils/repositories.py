@@ -231,6 +231,9 @@ def get_default_branch_last_updated(
     )
 
     if branch_res.status_code != 200:
+        print(default_branch)
+        print(branch_res.json())
+        print(branch_res.status_code)
         return False
 
     branch_res = branch_res.json()
