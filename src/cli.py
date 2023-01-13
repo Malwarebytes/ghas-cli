@@ -414,7 +414,7 @@ def repositories_archivable(
 
     # 1. Get list of non-archived repositories
     res = repositories.get_org_repositories(
-        status="all",
+        status="internal",
         organization=organization,
         token=token,
         language="",
@@ -424,6 +424,7 @@ def repositories_archivable(
         disabled=False,
     )
 
+    print(len(res))
     for repo in res:
 
         branch_last_commit_date = repositories.get_default_branch_last_updated(
@@ -433,7 +434,8 @@ def repositories_archivable(
             default_branch=repo.default_branch,
         )
         if not branch_last_commit_date:
-            return False
+            click.echo(f"No branch last commit date for {repo.name}", err=True)
+            continue
 
         if branch_last_commit_date > threshold_date:
             continue
@@ -1091,6 +1093,8 @@ def mass_archive(
 Hello,
 
 Due to inactivity, this repository will be archived automatically on {archived_date}.
+
+This means that it will become read-only: `git clone` will still work, and the repository can be unarchived at anytime if needed.
 
 For more information, see https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories#about-repository-archival
 
