@@ -21,6 +21,7 @@ def get_github_headers(token: str) -> Dict:
         "accept": "application/vnd.github+json",
         "authorization": f"Bearer {token}",
         "User-Agent": "malwarebytes/bulk_enable_ghas",
+        "X-GitHub-Api-Version": "2022-11-28",  # https://docs.github.com/en/rest/overview/api-versions#supported-api-versions
     }
 
 
