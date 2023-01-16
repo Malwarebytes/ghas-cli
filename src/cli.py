@@ -377,14 +377,15 @@ def repositories_create_dep_enforcement_pr(
     "--format",
     prompt="Output format",
     type=click.Choice(
-        ["human", "ghas", "json", "list"],
+        ["human", "list"],
         case_sensitive=False,
     ),
-    default="human",
+    default="list",
 )
 @click.option(
     "-u", "--last_updated_before", prompt="Last updated before YYYY-MM-DD", type=str
 )
+@click.argument("input_repos_list", type=click.File("r"))
 @click.argument("output", type=click.File("w"))
 @click.option(
     "-t",
@@ -400,6 +401,7 @@ def repositories_create_dep_enforcement_pr(
 def repositories_archivable(
     last_updated_before: str,
     format: str,
+    input_repos_list: Any,
     output: Any,
     organization: str,
     token: str,
@@ -412,48 +414,40 @@ def repositories_archivable(
         click.echo(f"Invalid time: {last_updated_before}")
         return False
 
-    # 1. Get list of non-archived repositories
-    res = repositories.get_org_repositories(
-        status="internal",
-        organization=organization,
-        token=token,
-        language="",
-        default_branch="",
-        license="",
-        archived=False,
-        disabled=False,
-    )
+    # 1. Get list repositories passed as argument
+    res = input_repos_list.readlines()
 
     print(len(res))
     for repo in res:
 
+        repo = repo.rstrip("\n")
+
+        # 2. get default branch
+        default_branch = repositories.get_default_branch(
+            organization=organization, token=token, repository=repo
+        )
+
+        # 3. get default branch last commit date
         branch_last_commit_date = repositories.get_default_branch_last_updated(
             token=token,
             organization=organization,
-            repository_name=repo.name,
-            default_branch=repo.default_branch,
+            repository_name=repo,
+            default_branch=default_branch,
         )
         if not branch_last_commit_date:
-            click.echo(f"No branch last commit date for {repo.name}", err=True)
+            click.echo(f"No branch last commit date for {repo}", err=True)
             continue
 
+        # 4. Compare with the threshold
         if branch_last_commit_date > threshold_date:
             continue
 
         if "human" == format:
             output.write(repo + "\n")
             click.echo(repo)
-        elif "ghas" == format:
-            output.write(
-                json.dumps([{"login": organization, "repos": repo.to_ghas()}]) + "\n"
-            )
-            click.echo([{"login": organization, "repos": repo.to_ghas()}])
-        elif "json" == format:
-            output.write(json.dumps(repo.to_json()) + "\n")
-            click.echo(repo.to_json())
         elif "list" == format:
-            output.write(repo.name + "\n")
-            click.echo(repo.name)
+            output.write(f"{repo}, {branch_last_commit_date.strftime('%Y-%m-%d')}\n")
+            click.echo(f"{repo}, {branch_last_commit_date.strftime('%Y-%m-%d')}")
 
     return True
 
