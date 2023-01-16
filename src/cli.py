@@ -1079,17 +1079,16 @@ def mass_set_developer_role(
 
     write_perms = []
 
+    # Ability to resume a previous run if needed.
     input_perms = input_perms_list.readlines()
     for perms in input_perms:
         perms = perms.rstrip("\n").split(",")
         write_perms.append([perms[0].strip(" "), perms[1].strip(" "), perms[2]])
 
-    print(len(write_perms))
     if len(write_perms) < 1:
-        print("write_perms empty, recreating")
         # List teams
         teams_list = teams.list(organization, token)
-        # print(teams_list)
+
         # List team's repositories
         for team in teams_list:
             team_repos = teams.get_repositories(team, organization, token)
@@ -1102,10 +1101,8 @@ def mass_set_developer_role(
                     print([team, repo.name, perms[-1]])
                     output_perms_list.write(f"{team}, {repo.name}, {perms[-1]}\n")
 
-    # print(write_perms)
-    # Assign Developer
+    # Assign the Developer role
     for perms in write_perms:
-        print(perms)
         if roles.assign_role(
             team=perms[0],
             role=permission,
