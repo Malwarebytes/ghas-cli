@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 
-from typing import List
+from typing import List, Any
 import base64
 import requests
 from . import network
 import time
+import datetime
 
 
 class Repository:
@@ -214,6 +215,46 @@ def get_org_repositories(
         page += 1
 
     return repos_list
+
+
+def get_default_branch_last_updated(
+    token: str, organization: str, repository_name: str, default_branch: str
+) -> Any:
+    """
+    Return the latest commit date on the default branch
+    """
+    headers = network.get_github_headers(token)
+
+    branch_res = requests.get(
+        url=f"https://api.github.com/repos/{organization}/{repository_name}/branches/{default_branch}",
+        headers=headers,
+    )
+
+    if branch_res.status_code != 200:
+        return False
+
+    branch_res = branch_res.json()
+
+    return datetime.datetime.strptime(
+        branch_res["commit"]["commit"]["author"]["date"].split("T")[0], "%Y-%m-%d"
+    )
+
+
+def archive(organization: str, token: str, repository: str) -> bool:
+    headers = network.get_github_headers(token)
+
+    payload = {"archived": True}
+
+    status = requests.patch(
+        url=f"https://api.github.com/repos/{organization}/{repository}",
+        headers=headers,
+        json=payload,
+    )
+
+    if status.status_code != 200:
+        return False
+    else:
+        return True
 
 
 def check_dependabot_alerts_enabled(

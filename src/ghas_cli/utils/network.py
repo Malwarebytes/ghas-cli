@@ -21,6 +21,7 @@ def get_github_headers(token: str) -> Dict:
         "accept": "application/vnd.github+json",
         "authorization": f"Bearer {token}",
         "User-Agent": "malwarebytes/bulk_enable_ghas",
+        "X-GitHub-Api-Version": "2022-11-28",  # https://docs.github.com/en/rest/overview/api-versions#supported-api-versions
     }
 
 
@@ -31,8 +32,8 @@ def check_rate_limit(response: Any) -> bool:
         print(
             f"Rate limit reached: {response.headers['x-ratelimit-remaining']}/{response.headers['x-ratelimit-limit']} - {reset_time}"
         )
-        print(f"Sleeping {(reset_time - datetime.now()).seconds}")
-        time.sleep((reset_time - datetime.now()).seconds + 1)
+
+        time.sleep(int(response.headers["x-ratelimit-remaining"]))
         return True
 
     if response.status_code == 403:

@@ -371,6 +371,115 @@ def repositories_create_dep_enforcement_pr(
     )
 
 
+@repositories_cli.command("archivable")
+@click.option(
+    "-f",
+    "--format",
+    prompt="Output format",
+    type=click.Choice(
+        ["human", "list"],
+        case_sensitive=False,
+    ),
+    default="list",
+)
+@click.option(
+    "-u", "--last_updated_before", prompt="Last updated before YYYY-MM-DD", type=str
+)
+@click.argument("input_repos_list", type=click.File("r"))
+@click.argument("output", type=click.File("w"))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def repositories_archivable(
+    last_updated_before: str,
+    format: str,
+    input_repos_list: Any,
+    output: Any,
+    organization: str,
+    token: str,
+) -> bool:
+    """Find potentially archivable repositories"""
+
+    try:
+        threshold_date = datetime.strptime(last_updated_before, "%Y-%m-%d")
+    except Exception:
+        click.echo(f"Invalid time: {last_updated_before}")
+        return False
+
+    # 1. Get list repositories passed as argument
+    res = input_repos_list.readlines()
+
+    print(len(res))
+    for repo in res:
+
+        repo = repo.rstrip("\n")
+
+        # 2. get default branch
+        default_branch = repositories.get_default_branch(
+            organization=organization, token=token, repository=repo
+        )
+        if not default_branch:
+            continue
+
+        # 3. get default branch last commit date
+        branch_last_commit_date = repositories.get_default_branch_last_updated(
+            token=token,
+            organization=organization,
+            repository_name=repo,
+            default_branch=default_branch,
+        )
+        if not branch_last_commit_date:
+            click.echo(f"No branch last commit date for {repo}", err=True)
+            continue
+
+        # 4. Compare with the threshold
+        if branch_last_commit_date > threshold_date:
+            continue
+
+        if "human" == format:
+            output.write(repo + "\n")
+            click.echo(repo)
+        elif "list" == format:
+            output.write(f"{repo}, {branch_last_commit_date.strftime('%Y-%m-%d')}\n")
+            click.echo(f"{repo}, {branch_last_commit_date.strftime('%Y-%m-%d')}")
+
+    return True
+
+
+@repositories_cli.command("archive")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def repositories_archive(
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Archive a repository"""
+    click.echo(repositories.archive(organization, token, repository))
+
+
 #########
 # Teams #
 #########
@@ -1040,6 +1149,88 @@ def mass_deploy(
             f"{organization},{repo},{actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}, {mend_res}\n"
         )
 
+@mass_cli.command("archive")
+@click.argument("input_repos_list", type=click.File("r"))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_archive(
+    input_repos_list: Any,
+    organization: str,
+    token: str,
+) -> None:
+    repos_list = input_repos_list.readlines()
+
+    for repo in repos_list:
+
+        repo = repo.rstrip("\n")
+
+        click.echo(f"{repo}...", nl=False)
+
+        if repositories.archive(
+            organization=organization, token=token, repository=repo
+        ):
+            click.echo(" Archived.")
+        else:
+            click.echo(" Not Archived.", err=True)
+
+
+
+
+@mass_cli.command("issue_upcoming_archive")
+@click.argument("input_repos_list", type=click.File("r"))
+@click.option(
+    "-u",
+    "--archived_date",
+    prompt="Target date when the repositories will be archived",
+    type=str,
+)
+def mass_issue_archive(
+    input_repos_list: Any,
+    archived_date: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Create an issue to inform that repositories will be archived at a specific date."""
+
+    repos_list = input_repos_list.readlines()
+
+    for repo in repos_list:
+
+        repo = repo.rstrip("\n")
+
+        issue_res = issues.create(
+            title=f"This repository will be archived on {archived_date}  :warning: :wastebasket:",
+            content=f"""
+Hello,
+
+Due to inactivity, this repository will be archived automatically on {archived_date}.
+
+This means that it will become read-only: `git clone` will still work, and the repository can be unarchived at anytime if needed.
+
+For more information, see https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories#about-repository-archival
+
+If you think this is a mistake, please inform the Security team *ASAP* on Slack at `#github-appsec-security.`
+
+Thanks! :handshake:""",
+            repository=repo,
+            organization=organization,
+            token=token,
+        )
+        if issue_res:
+            click.echo(f"{repo}... {issue_res}")
+        else:
+            click.echo(f"{repo}... Failure", err=True)
+            
+            
 
 @mass_cli.command("set_developer_role")
 @click.option(
