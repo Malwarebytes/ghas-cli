@@ -426,6 +426,8 @@ def repositories_archivable(
         default_branch = repositories.get_default_branch(
             organization=organization, token=token, repository=repo
         )
+        if not default_branch:
+            continue
 
         # 3. get default branch last commit date
         branch_last_commit_date = repositories.get_default_branch_last_updated(
