@@ -3,7 +3,7 @@
 
 __author__ = "jboursier"
 __copyright__ = "Copyright 2022, Malwarebytes"
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 __maintainer__ = "jboursier"
 __email__ = "jboursier@malwarebytes.com"
 __status__ = "Production"
@@ -1149,6 +1149,7 @@ def mass_deploy(
             f"{organization},{repo},{actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}, {mend_res}\n"
         )
 
+
 @mass_cli.command("archive")
 @click.argument("input_repos_list", type=click.File("r"))
 @click.option(
@@ -1181,8 +1182,6 @@ def mass_archive(
             click.echo(" Archived.")
         else:
             click.echo(" Not Archived.", err=True)
-
-
 
 
 @mass_cli.command("issue_upcoming_archive")
@@ -1229,8 +1228,7 @@ Thanks! :handshake:""",
             click.echo(f"{repo}... {issue_res}")
         else:
             click.echo(f"{repo}... Failure", err=True)
-            
-            
+
 
 @mass_cli.command("set_developer_role")
 @click.option(
