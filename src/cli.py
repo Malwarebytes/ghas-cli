@@ -1192,6 +1192,17 @@ def mass_archive(
     prompt="Target date when the repositories will be archived",
     type=str,
 )
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
 def mass_issue_archive(
     input_repos_list: Any,
     archived_date: str,
@@ -1217,7 +1228,7 @@ This means that it will become read-only: `git clone` will still work, and the r
 
 For more information, see https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories#about-repository-archival
 
-If you think this is a mistake, please inform the Security team *ASAP* on Slack at `#github-appsec-security.`
+If you think this is a mistake, please inform the Security team *ASAP* on Slack at `#github-appsec-security`.
 
 Thanks! :handshake:""",
             repository=repo,
