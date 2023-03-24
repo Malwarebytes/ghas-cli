@@ -4,7 +4,7 @@
 from typing import Any, Dict
 from datetime import datetime
 import time
-
+import requests
 
 # If the rate-limit is reached, sleep X seconds
 SLEEP_1_MINUTE = 60
@@ -41,3 +41,33 @@ def check_rate_limit(response: Any) -> bool:
 
     time.sleep(SLEEP_BETWEEN_REQUESTS)
     return False
+
+def check_unauthorized(response: Any):
+    if response.status_code == 401:
+        print(response.json()["message"])
+        return False
+    return True
+
+def check_response(response: any):
+    check_rate_limit(response)
+    check_unauthorized(response)
+
+def get(*args, **kwargs):
+    response = requests.get(*args, **kwargs)
+    check_response(response)
+    return response
+
+def post(*args, **kwargs):
+    response = requests.post(*args, **kwargs)
+    check_response(response)
+    return response
+
+def put(*args, **kwargs):
+    response = requests.put(*args, **kwargs)
+    check_response(response)
+    return response
+
+def patch(*args, **kwargs):
+    response = requests.patch(*args, **kwargs)
+    check_response(response)
+    return response
