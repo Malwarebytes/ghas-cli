@@ -179,7 +179,6 @@ def get_org_repositories(
             break
 
         for r in repos.json():
-
             repo = Repository()
             repo.load_json(r, token=token)
             # repo.load_json(r, token=None)
@@ -260,7 +259,6 @@ def archive(organization: str, token: str, repository: str) -> bool:
 def check_dependabot_alerts_enabled(
     token: str, organization: str, repository_name: str
 ) -> bool:
-
     headers = network.get_github_headers(token)
 
     status = requests.get(
@@ -496,7 +494,6 @@ def create_codeql_pr(
     )
 
     for language in languages:
-
         # Workflow config
         lang, template = load_codeql_base64_template(language, default_branch)
         payload = {
