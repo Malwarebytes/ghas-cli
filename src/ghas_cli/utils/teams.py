@@ -15,7 +15,6 @@ def get_repositories(team_slug: str, organization: str, token: str) -> List:
     page = 1
 
     while True:
-
         params = {"per_page": 100, "page": page}
         repos = requests.get(
             url=f"https://api.github.com/orgs/{organization}/teams/{team_slug}/repos",
@@ -50,7 +49,6 @@ def list(organization: str, token: str) -> str:
     page = 1
 
     while True:
-
         params = {"per_page": 100, "page": page}
 
         teams_res = requests.get(
