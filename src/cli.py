@@ -419,7 +419,6 @@ def repositories_archivable(
 
     print(len(res))
     for repo in res:
-
         repo = repo.rstrip("\n")
 
         # 2. get default branch
@@ -756,16 +755,45 @@ def secret_alerts_cli() -> None:
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option(
+    "-f",
+    "--secrets-filter",
+    prompt=True,
+    type=click.Choice(
+        [
+            "all",
+            "atlassian_api_token",
+            "slack_incoming_webhook_url",
+            "github_ssh_private_key",
+            "slack_api_token",
+            "mailgun_api_key",
+            "firebase_cloud_messaging_server_key",
+            "jfrog_platform_api_key",
+            "google_api_key",
+            "azure_storage_account_key",
+            "new_relic_license_key",
+            "github_personal_access_token",
+            "sendgrid_api_key",
+            "azure_devops_personal_access_token",
+            "jfrog_platform_access_token",
+            "google_cloud_private_key_id",
+            "google_oauth_access_token",
+        ]
+    ),
+    default="all",
+    hide_input=False,
+)
 def secret_alerts_export(
-    state: str, output_csv: Any, token: str, organization: str
+    state: str, output_csv: Any, token: str, organization: str, secrets_filter: str
 ) -> None:
     """Export secrets to a csv"""
 
-    secrets_list = secrets.export_secrets(state, token, organization)
+    secrets_list = secrets.export_secrets(state, token, organization, secrets_filter)
     for secret in secrets_list:
         output_csv.write(
             f"{secret['state']}, {secret['resolution']}, {secret['resolved_at']}, {secret['repository_full_name']}, {secret['url']}, {secret['secret_type']}, {secret['secret']}\n"
         )
+    print(f"Retrieved {len(secrets_list)} secrets.")
 
 
 ##############
@@ -897,7 +925,6 @@ def roles_add(
     organization: str,
     token: str,
 ) -> None:
-
     if roles.create_role(
         name, description, base_role, permissions, organization, token
     ):
@@ -1051,7 +1078,6 @@ def mass_deploy(
     )
 
     for repo in repos_list:
-
         repo = repo.rstrip("\n")
         issue_secretscanner_res = None
         issue_pushprotection_res = None
@@ -1171,7 +1197,6 @@ def mass_archive(
     repos_list = input_repos_list.readlines()
 
     for repo in repos_list:
-
         repo = repo.rstrip("\n")
 
         click.echo(f"{repo}...", nl=False)
@@ -1214,7 +1239,6 @@ def mass_issue_archive(
     repos_list = input_repos_list.readlines()
 
     for repo in repos_list:
-
         repo = repo.rstrip("\n")
 
         issue_res = issues.create(
