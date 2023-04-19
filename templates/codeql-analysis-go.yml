@@ -6,7 +6,7 @@
 #
 # Reach out on Slack at '#github-appsec-security' to get help.
 
-name: "CodeQL - Python"
+name: "CodeQL - Go"
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ["python"]
+        language: ["go"]
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
 
     steps:
@@ -39,7 +39,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
-          config-file: ./.github/codeql/codeql-config-python.yml
+          config-file: ./.github/codeql/codeql-config-javascript.yml
           languages: ${{ matrix.language }}
           queries: security-extended
           # If you wish to specify custom queries, you can do so here or in a config file.
