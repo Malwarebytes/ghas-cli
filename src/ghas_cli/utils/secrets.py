@@ -7,7 +7,9 @@ import requests
 from . import network
 
 
-def export_secrets(state: str, token: str, organization: str) -> List:
+def export_secrets(
+    state: str, token: str, organization: str, secrets_filter: str
+) -> List:
     """Get all secrets from the organization"""
 
     headers = network.get_github_headers(token)
@@ -22,6 +24,7 @@ def export_secrets(state: str, token: str, organization: str) -> List:
             params=params,
             headers=headers,
         )
+
         if network.check_rate_limit(secrets):
             break
         if secrets.status_code != 200:
@@ -40,8 +43,8 @@ def export_secrets(state: str, token: str, organization: str) -> List:
             s["secret_type"] = secret["secret_type"]
             s["secret"] = secret["secret"]
 
-            secret_list.append(s)
+            if secrets_filter is "all" or s["secret_type"] == secrets_filter:
+                secret_list.append(s)
 
         page += 1
-
     return secret_list
