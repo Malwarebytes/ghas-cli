@@ -164,17 +164,15 @@ def get_org_repositories(
             "per_page": 100,
             "page": page,
         }
-        repos = requests.get(
+        repos = network.get(
             url=f"https://api.github.com/orgs/{organization}/repos",
             params=params,
             headers=headers,
         )
-        if network.check_rate_limit(repos):
-            break
 
         if repos.status_code != 200:
             break
-
+    
         if [] == repos.json():
             break
 
@@ -225,7 +223,7 @@ def get_default_branch_last_updated(
     """
     headers = network.get_github_headers(token)
 
-    branch_res = requests.get(
+    branch_res = network.get(
         url=f"https://api.github.com/repos/{organization}/{repository_name}/branches/{default_branch}",
         headers=headers,
     )
@@ -245,7 +243,7 @@ def archive(organization: str, token: str, repository: str) -> bool:
 
     payload = {"archived": True}
 
-    status = requests.patch(
+    status = network.patch(
         url=f"https://api.github.com/repos/{organization}/{repository}",
         headers=headers,
         json=payload,
@@ -263,7 +261,7 @@ def check_dependabot_alerts_enabled(
 
     headers = network.get_github_headers(token)
 
-    status = requests.get(
+    status = network.get(
         url=f"https://api.github.com/orgs/{organization}/repos/vulnerability-alerts",
         headers=headers,
     )
@@ -286,7 +284,7 @@ def enable_secret_scanner(organization: str, token: str, repository: str) -> boo
         }
     }
 
-    status = requests.patch(
+    status = network.patch(
         url=f"https://api.github.com/repos/{organization}/{repository}",
         headers=headers,
         json=payload,
@@ -313,7 +311,7 @@ def enable_secret_scanner_push_protection(
         }
     }
 
-    status = requests.patch(
+    status = network.patch(
         url=f"https://api.github.com/repos/{organization}/{repository}",
         headers=headers,
         json=payload,
@@ -328,12 +326,12 @@ def enable_secret_scanner_push_protection(
 def enable_dependabot(organization: str, token: str, repository: str) -> bool:
     headers = network.get_github_headers(token)
 
-    status_alerts = requests.put(
+    status_alerts = network.put(
         url=f"https://api.github.com/repos/{organization}/{repository}/vulnerability-alerts",
         headers=headers,
     )
 
-    status_fixes = requests.put(
+    status_fixes = network.put(
         url=f"https://api.github.com/repos/{organization}/{repository}/automated-security-fixes",
         headers=headers,
     )
@@ -348,7 +346,7 @@ def get_default_branch(organization: str, token: str, repository: str) -> str:
     """Get the default branch slug for a repository"""
     headers = network.get_github_headers(token)
 
-    repo = requests.get(
+    repo = network.get(
         url=f"https://api.github.com/repos/{organization}/{repository}",
         headers=headers,
     )
@@ -375,7 +373,7 @@ def get_languages(
     aliased_interpreted_languages = {"typescript": "javascript"}
 
     headers = network.get_github_headers(token)
-    languages = requests.get(
+    languages = network.get(
         url=f"https://api.github.com/repos/{organization}/{repository}/languages",
         headers=headers,
     )
@@ -460,7 +458,7 @@ def create_codeql_pr(
         return False
 
     # Create a branch
-    branch_resp = requests.get(
+    branch_resp = network.get(
         url=f"https://api.github.com/repos/{organization}/{repository}/git/refs/heads",
         headers=headers,
     )
@@ -481,7 +479,7 @@ def create_codeql_pr(
         "sha": sha1,
     }
 
-    branch_resp = requests.post(
+    branch_resp = network.post(
         url=f"https://api.github.com/repos/{organization}/{repository}/git/refs",
         headers=headers,
         json=payload,
@@ -505,7 +503,7 @@ def create_codeql_pr(
             "branch": target_branch,
         }
 
-        commit_resp = requests.put(
+        commit_resp = network.put(
             url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis-{lang}.yml",
             headers=headers,
             json=payload,
@@ -522,7 +520,7 @@ def create_codeql_pr(
             "branch": target_branch,
         }
 
-        commit_resp = requests.put(
+        commit_resp = network.put(
             url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/codeql/codeql-config-{lang}.yml",
             headers=headers,
             json=payload,
@@ -541,7 +539,7 @@ def create_codeql_pr(
     # Retry if rate-limited
     i = 0
     while i < network.RETRIES:
-        pr_resp = requests.post(
+        pr_resp = network.post(
             url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
             headers=headers,
             json=payload,
@@ -589,7 +587,7 @@ def create_dependency_enforcement_pr(
         return False
 
     # Create a branch
-    branch_resp = requests.get(
+    branch_resp = network.get(
         url=f"https://api.github.com/repos/{organization}/{repository}/git/refs/heads",
         headers=headers,
     )
@@ -610,7 +608,7 @@ def create_dependency_enforcement_pr(
         "sha": sha1,
     }
 
-    branch_resp = requests.post(
+    branch_resp = network.post(
         url=f"https://api.github.com/repos/{organization}/{repository}/git/refs",
         headers=headers,
         json=payload,
@@ -627,7 +625,7 @@ def create_dependency_enforcement_pr(
         "branch": target_branch,
     }
 
-    commit_resp = requests.put(
+    commit_resp = network.put(
         url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/dependency_enforcement.yml",
         headers=headers,
         json=payload,
@@ -646,7 +644,7 @@ def create_dependency_enforcement_pr(
     # Retry if rate-limited
     i = 0
     while i < network.RETRIES:
-        pr_resp = requests.post(
+        pr_resp = network.post(
             url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
             headers=headers,
             json=payload,
