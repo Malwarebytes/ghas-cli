@@ -17,12 +17,10 @@ def get_codeql_alerts_repo(
     repositories_alerts = {}
 
     for repo in repos:
-
         alerts_repo = []
         page = 1
 
         while True:
-
             params = {"state": "open", "per_page": 100, "page": page}
             alerts = requests.get(
                 url=f"https://api.github.com/repos/{organization}/{repo.name}/code-scanning/alerts",
