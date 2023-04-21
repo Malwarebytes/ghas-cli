@@ -3,6 +3,7 @@
 
 from typing import List
 import requests
+import logging
 from . import network, repositories
 
 
@@ -24,8 +25,8 @@ def get_repositories(team_slug: str, organization: str, token: str) -> List:
         if network.check_rate_limit(repos):
             break
 
-        # print(repos.status_code)
-        # print(repos.content)
+        # logging.debug(repos.status_code)
+        # logging.debug(repos.content)
         if repos.status_code != 200:
             break
 
@@ -87,7 +88,7 @@ def get_repo_perms(team: str, repo: str, organization: str, token: str) -> List:
         url=f"https://api.github.com/orgs/{organization}/teams/{team}/repos/{organization}/{repo}",
         headers=headers,
     )
-    # print(teams_res.status_code)
+    # logging.debug(teams_res.status_code)
     if network.check_rate_limit(teams_res):
         return []
     if teams_res.status_code != 200:
@@ -96,6 +97,6 @@ def get_repo_perms(team: str, repo: str, organization: str, token: str) -> List:
     if [] == teams_res.json():
         return []
 
-    # print(teams_res.json()["role_name"])
+    # logging.debug(teams_res.json()["role_name"])
 
     return [teams_res.json()["permissions"], teams_res.json()["role_name"]]
