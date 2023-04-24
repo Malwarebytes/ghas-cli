@@ -362,7 +362,7 @@ def get_languages(
     organization: str,
     token: str,
     repository: str,
-    only_codeql: False,
+    only_codeql: bool = False,
 ) -> List:
     """Get the main language for a repository"""
 
