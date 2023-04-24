@@ -381,7 +381,7 @@ def get_languages(
     )
 
     if languages_resp.status_code != 200:
-        print(languages_resp.json())
+        logging.warn(f"Received status code {languages_resp.status_code} while retrieving repository languages.")
         return ["default"]
 
     languages = list()
