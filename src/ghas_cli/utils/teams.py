@@ -3,7 +3,6 @@
 
 from typing import List
 import requests
-import logging
 from . import network, repositories
 
 
