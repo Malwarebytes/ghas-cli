@@ -398,11 +398,11 @@ def get_languages(
 
 
 def load_codeql_base64_template(
-    languages: List, default_branch: List = ["main"]
+    languages: List, branches: List = ["main"]
 ) -> str:
     with open(f"./templates/codeql-analysis-default.yml", "r") as f:
         data = "".join(f.readlines())
-        data = data.replace("""branches: [ ]""", f"""branches: {default_branch}""")
+        data = data.replace("""branches: [ ]""", f"""branches: [{', '.join(branches)}]""")
         data = data.replace("""language: [ ]""", f"""language: {languages}""")
         return base64.b64encode(data.encode("utf-8")).decode("utf-8")
 
@@ -487,7 +487,7 @@ def create_codeql_pr(
     languages = get_languages(organization, token, repository, only_codeql=True)
 
     # Workflow config
-    template = load_codeql_base64_template(languages, default_branch)
+    template = load_codeql_base64_template(languages, [default_branch])
     workflow_commit_payload = {
         "message": f"Create CodeQL analysis workflow",
         "content": template,
