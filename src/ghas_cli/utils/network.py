@@ -4,7 +4,7 @@
 from typing import Any, Dict
 from datetime import datetime
 import time
-
+import requests
 
 # If the rate-limit is reached, sleep X seconds
 SLEEP_1_MINUTE = 60
@@ -26,7 +26,6 @@ def get_github_headers(token: str) -> Dict:
 
 
 def check_rate_limit(response: Any) -> bool:
-
     if "0" == response.headers["x-ratelimit-remaining"]:
         reset_time = datetime.fromtimestamp(int(response.headers["x-ratelimit-reset"]))
         print(
@@ -37,8 +36,39 @@ def check_rate_limit(response: Any) -> bool:
         return True
 
     if response.status_code == 403:
-        print("Secondary rate limit reached. Need to wait...")
+        # This can be secondary rate limit or SSO error
+        print(response.json()["message"])
         return True
 
     time.sleep(SLEEP_BETWEEN_REQUESTS)
     return False
+
+def check_unauthorized(response: Any):
+    if response.status_code == 401:
+        print(response.json()["message"])
+        return False
+    return True
+
+def check_response(response: any):
+    check_rate_limit(response)
+    check_unauthorized(response)
+
+def get(*args, **kwargs):
+    response = requests.get(*args, **kwargs)
+    check_response(response)
+    return response
+
+def post(*args, **kwargs):
+    response = requests.post(*args, **kwargs)
+    check_response(response)
+    return response
+
+def put(*args, **kwargs):
+    response = requests.put(*args, **kwargs)
+    check_response(response)
+    return response
+
+def patch(*args, **kwargs):
+    response = requests.patch(*args, **kwargs)
+    check_response(response)
+    return response
