@@ -1079,8 +1079,8 @@ def mass_deploy(
         f"Enabling Actions ({actions_enable}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}), Dependency Reviewer ({reviewer}) to {len(repos_list)} repositories."
     )
 
-    for repo in repos_list:
-        repo = repo.rstrip("\n")
+    for repo_name in repos_list:
+        repo = repo_name.rstrip("\n")
         issue_secretscanner_res = None
         issue_pushprotection_res = None
         issue_dependabot_res = None
