@@ -1201,11 +1201,6 @@ def mass_archive(
     repos_list = input_repos_list.readlines()
 
     for repo in repos_list:
-
-
-    repos_list = input_repos_list.readlines()
-
-    for repo in repos_list:
         repo = repo.rstrip("\n")
 
         click.echo(f"{repo}...", nl=False)
