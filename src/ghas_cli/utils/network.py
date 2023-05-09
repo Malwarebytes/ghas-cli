@@ -26,17 +26,18 @@ def get_github_headers(token: str) -> Dict:
 
 
 def check_rate_limit(response: Any) -> bool:
-
     if "0" == response.headers["x-ratelimit-remaining"]:
         reset_time = datetime.fromtimestamp(int(response.headers["x-ratelimit-reset"]))
         print(
             f"Rate limit reached: {response.headers['x-ratelimit-remaining']}/{response.headers['x-ratelimit-limit']} - {reset_time}"
         )
+
         time.sleep(int(response.headers["x-ratelimit-remaining"]))
         return True
 
     if response.status_code == 403:
-        print("Secondary rate limit reached. Need to wait...")
+        # This can be secondary rate limit or SSO error
+        print(response.json()["message"])
         return True
 
     time.sleep(SLEEP_BETWEEN_REQUESTS)

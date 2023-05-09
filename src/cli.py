@@ -2,8 +2,8 @@
 #!/usr/bin/env python3
 
 __author__ = "jboursier"
-__copyright__ = "Copyright 2022, Malwarebytes"
-__version__ = "1.3.0"
+__copyright__ = "Copyright 2023, Malwarebytes"
+__version__ = "1.4.2"
 __maintainer__ = "jboursier"
 __email__ = "jboursier@malwarebytes.com"
 __status__ = "Production"
@@ -11,7 +11,7 @@ __status__ = "Production"
 try:
     import click
     import json
-    from typing import Dict, Any
+    from typing import Dict, Any, List
     from datetime import datetime
 except ImportError:
     import sys
@@ -19,7 +19,7 @@ except ImportError:
     print("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from ghas_cli.utils import repositories, vulns, teams, issues, actions, secrets
+from ghas_cli.utils import repositories, vulns, teams, issues, actions, roles, secrets
 
 
 def main() -> None:
@@ -419,7 +419,6 @@ def repositories_archivable(
 
     print(len(res))
     for repo in res:
-
         repo = repo.rstrip("\n")
 
         # 2. get default branch
@@ -551,6 +550,33 @@ def teams_get_repositories(
     elif "list" == format:
         for repo in team_repos:
             click.echo(f"{repo.orga}/{repo.name}")
+
+
+
+@teams_cli.command("permissions")
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option("-s", "--team", prompt="Team slug", type=str)
+@click.option("-r", "--repository", prompt="Repository name", type=str)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+def teams_get_permissions(
+    organization: str, team: str, repository: str, token: str
+) -> None:
+    """List permissions for a specific team for a repository"""
+    team_repo_perms = teams.get_repo_perms(
+        team=team, repo=repository, organization=organization, token=token
+    )
+
+    click.echo(team_repo_perms)
+
 
 
 ##########
@@ -731,16 +757,45 @@ def secret_alerts_cli() -> None:
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option(
+    "-f",
+    "--secrets-filter",
+    prompt=True,
+    type=click.Choice(
+        [
+            "all",
+            "atlassian_api_token",
+            "slack_incoming_webhook_url",
+            "github_ssh_private_key",
+            "slack_api_token",
+            "mailgun_api_key",
+            "firebase_cloud_messaging_server_key",
+            "jfrog_platform_api_key",
+            "google_api_key",
+            "azure_storage_account_key",
+            "new_relic_license_key",
+            "github_personal_access_token",
+            "sendgrid_api_key",
+            "azure_devops_personal_access_token",
+            "jfrog_platform_access_token",
+            "google_cloud_private_key_id",
+            "google_oauth_access_token",
+        ]
+    ),
+    default="all",
+    hide_input=False,
+)
 def secret_alerts_export(
-    state: str, output_csv: Any, token: str, organization: str
+    state: str, output_csv: Any, token: str, organization: str, secrets_filter: str
 ) -> None:
     """Export secrets to a csv"""
 
-    secrets_list = secrets.export_secrets(state, token, organization)
+    secrets_list = secrets.export_secrets(state, token, organization, secrets_filter)
     for secret in secrets_list:
         output_csv.write(
             f"{secret['state']}, {secret['resolution']}, {secret['resolved_at']}, {secret['repository_full_name']}, {secret['url']}, {secret['secret_type']}, {secret['secret']}\n"
         )
+    print(f"Retrieved {len(secrets_list)} secrets.")
 
 
 ##############
@@ -814,6 +869,116 @@ def actions_set_permissions(
     )
 
     click.echo(permissions)
+
+
+###############
+# Roles #
+###############
+
+
+@cli.group(name="roles")
+def roles_cli() -> None:
+    """Manage roles"""
+    pass
+
+
+@roles_cli.command("add")
+@click.option(
+    "-n",
+    "--name",
+    type=click.STRING,
+    prompt="Role name",
+)
+@click.option(
+    "-d",
+    "--description",
+    type=click.STRING,
+    prompt="Description",
+)
+@click.option(
+    "-b",
+    "--base_role",
+    type=click.STRING,
+    prompt="Base role",
+)
+@click.option(
+    "-p",
+    "--permission",
+    type=click.STRING,
+    prompt="Additional permission",
+    multiple=True,
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def roles_add(
+    name: str,
+    description: str,
+    base_role: str,
+    permission: List,
+    organization: str,
+    token: str,
+) -> None:
+    if roles.create_role(
+        name, description, base_role, permissions, organization, token
+    ):
+        click.echo(f"Custom role {name} created with success!")
+    else:
+        click.echo(f"Failure to create the custom role {name}.")
+
+
+@roles_cli.command("assign")
+@click.option(
+    "-n",
+    "--name",
+    type=click.STRING,
+    prompt="Team name",
+)
+@click.option(
+    "-p",
+    "--permission",
+    type=click.STRING,
+    prompt="Role to assign",
+    default="Developer",
+)
+@click.option(
+    "-r",
+    "--repository",
+    type=click.STRING,
+    prompt="Repository",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def roles_assign(
+    name: str, permission: str, repository: str, organization: str, token: str
+):
+    if roles.assign_role(
+        team=name,
+        role=permission,
+        repository=repository,
+        organization=organization,
+        token=token,
+    ):
+        click.echo(f"Assigned {permission} to {name} with success.")
+    else:
+        click.echo(f"Failure to assign {permission} to {name}.")
 
 
 ###############
@@ -915,7 +1080,6 @@ def mass_deploy(
     )
 
     for repo in repos_list:
-
         repo = repo.rstrip("\n")
         issue_secretscanner_res = None
         issue_pushprotection_res = None
@@ -1027,7 +1191,7 @@ def mass_deploy(
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
-def mass_issue_archive(
+def mass_archive(
     input_repos_list: Any,
     organization: str,
     token: str,
@@ -1038,6 +1202,10 @@ def mass_issue_archive(
 
     for repo in repos_list:
 
+
+    repos_list = input_repos_list.readlines()
+
+    for repo in repos_list:
         repo = repo.rstrip("\n")
 
         click.echo(f"{repo}...", nl=False)
@@ -1069,18 +1237,17 @@ def mass_issue_archive(
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
-def mass_archive(
+def mass_issue_archive(
     input_repos_list: Any,
     archived_date: str,
     organization: str,
     token: str,
 ) -> None:
-    """Mass archive a list of repositories"""
+    """Create an issue to inform that repositories will be archived at a specific date."""
 
     repos_list = input_repos_list.readlines()
 
     for repo in repos_list:
-
         repo = repo.rstrip("\n")
 
         issue_res = issues.create(
@@ -1094,7 +1261,7 @@ This means that it will become read-only: `git clone` will still work, and the r
 
 For more information, see https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories#about-repository-archival
 
-If you think this is a mistake, please inform the Security team *ASAP* on Slack at `#github-appsec-security.`
+If you think this is a mistake, please inform the Security team *ASAP* on Slack at `#github-appsec-security`.
 
 Thanks! :handshake:""",
             repository=repo,
@@ -1105,6 +1272,84 @@ Thanks! :handshake:""",
             click.echo(f"{repo}... {issue_res}")
         else:
             click.echo(f"{repo}... Failure", err=True)
+
+
+@mass_cli.command("set_developer_role")
+@click.option(
+    "-p",
+    "--permission",
+    type=click.STRING,
+    prompt="Role to assign",
+    default="Developer",
+)
+@click.argument("input_perms_list", type=click.File("r"))
+@click.argument("output_perms_list", type=click.File("a", lazy=True))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_set_developer_role(
+    permission: str,
+    input_perms_list: Any,
+    output_perms_list: Any,
+    token: str,
+    organization: str,
+) -> None:
+    """Convert all teams with `Write` access to `Developer` on all repository they have `Write` access to.
+
+    1. List teams
+    2. List their repository
+    3. Get permissions and only filter the ones with `Write` role_name
+    4. Assign `Developer` role
+    """
+
+    write_perms = []
+
+    # Ability to resume a previous run if needed.
+    input_perms = input_perms_list.readlines()
+    for perms in input_perms:
+        perms = perms.rstrip("\n").split(",")
+        write_perms.append([perms[0].strip(" "), perms[1].strip(" "), perms[2]])
+
+    if len(write_perms) < 1:
+        # List teams
+        teams_list = teams.list(organization, token)
+
+        # List team's repositories
+        for team in teams_list:
+            team_repos = teams.get_repositories(team, organization, token)
+
+            # List teams' permissions + filter only Write
+            for repo in team_repos:
+                perms = teams.get_repo_perms(team, repo.name, organization, token)
+                if "write" == perms[-1]:
+                    write_perms.append([team, repo.name, perms[-1]])
+                    print([team, repo.name, perms[-1]])
+                    output_perms_list.write(f"{team}, {repo.name}, {perms[-1]}\n")
+
+    # Assign the Developer role
+    for perms in write_perms:
+        if roles.assign_role(
+            team=perms[0],
+            role=permission,
+            repository=perms[1],
+            organization=organization,
+            token=token,
+        ):
+            click.echo(
+                f"Assigned {permission} to {perms[0]} on {perms[1]} with success."
+            )
+        else:
+            click.echo(f"Failure to assign {permission} to {perms[0]} on {perms[1]}.")
+
+    return None
 
 
 if __name__ == "__main__":
