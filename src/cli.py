@@ -552,7 +552,6 @@ def teams_get_repositories(
             click.echo(f"{repo.orga}/{repo.name}")
 
 
-
 @teams_cli.command("permissions")
 @click.option("-o", "--organization", prompt="Organization name", type=str)
 @click.option("-s", "--team", prompt="Team slug", type=str)
@@ -576,7 +575,6 @@ def teams_get_permissions(
     )
 
     click.echo(team_repo_perms)
-
 
 
 ##########
@@ -1079,8 +1077,8 @@ def mass_deploy(
         f"Enabling Actions ({actions_enable}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}), Dependency Reviewer ({reviewer}) to {len(repos_list)} repositories."
     )
 
-    for repo_name in repos_list:
-        repo = repo_name.rstrip("\n")
+    for repo in repos_list:
+        repo = repo.rstrip("\n")
         issue_secretscanner_res = None
         issue_pushprotection_res = None
         issue_dependabot_res = None
@@ -1196,8 +1194,6 @@ def mass_archive(
     organization: str,
     token: str,
 ) -> None:
-    """Create an issue to inform that repositories will be archived at a specific date."""
-
     repos_list = input_repos_list.readlines()
 
     for repo in repos_list:
