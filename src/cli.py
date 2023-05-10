@@ -13,10 +13,13 @@ try:
     import json
     from typing import Dict, Any, List
     from datetime import datetime
+    import logging
+
+    logging.getLogger().setLevel(level=logging.INFO)
 except ImportError:
     import sys
 
-    print("Missing dependencies. Please reach @jboursier if needed.")
+    logging.error("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
 from ghas_cli.utils import repositories, vulns, teams, issues, actions, roles, secrets
@@ -417,7 +420,7 @@ def repositories_archivable(
     # 1. Get list repositories passed as argument
     res = input_repos_list.readlines()
 
-    print(len(res))
+    logging.info(len(res))
     for repo in res:
         repo = repo.rstrip("\n")
 
@@ -793,7 +796,7 @@ def secret_alerts_export(
         output_csv.write(
             f"{secret['state']}, {secret['resolution']}, {secret['resolved_at']}, {secret['repository_full_name']}, {secret['url']}, {secret['secret_type']}, {secret['secret']}\n"
         )
-    print(f"Retrieved {len(secrets_list)} secrets.")
+    logging.info(f"Retrieved {len(secrets_list)} secrets.")
 
 
 ##############
@@ -921,7 +924,7 @@ def roles_add(
     name: str,
     description: str,
     base_role: str,
-    permission: List,
+    permissions: List,
     organization: str,
     token: str,
 ) -> None:
@@ -1073,7 +1076,7 @@ def mass_deploy(
     with open("./templates/codeql.md", "r") as f:
         template_codeql = f.read()
 
-    print(
+    logging.info(
         f"Enabling Actions ({actions_enable}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}), Dependency Reviewer ({reviewer}) to {len(repos_list)} repositories."
     )
 
@@ -1091,7 +1094,7 @@ def mass_deploy(
         reviewer_res = None
         mend_res = 0
 
-        print(f"{repo}....", end="")
+        logging.info(f"{repo}....")
 
         if actions_enable:
             actions_res = actions.set_permissions(
@@ -1166,7 +1169,7 @@ def mass_deploy(
                     token=token,
                 )
 
-        print(
+        logging.info(
             f"Done: {actions_res},{secretscanner_res}, {pushprotection_res}, {dependabot_res}, {codeql_res}, {reviewer_res}, {issue_secretscanner_res}, {issue_pushprotection_res}, {issue_dependabot_res}, {issue_codeql_res}, {mend_res}"
         )
         # CSV columns
@@ -1322,7 +1325,7 @@ def mass_set_developer_role(
                 perms = teams.get_repo_perms(team, repo.name, organization, token)
                 if "write" == perms[-1]:
                     write_perms.append([team, repo.name, perms[-1]])
-                    print([team, repo.name, perms[-1]])
+                    logging.info([team, repo.name, perms[-1]])
                     output_perms_list.write(f"{team}, {repo.name}, {perms[-1]}\n")
 
     # Assign the Developer role

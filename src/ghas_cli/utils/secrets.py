@@ -43,7 +43,7 @@ def export_secrets(
             s["secret_type"] = secret["secret_type"]
             s["secret"] = secret["secret"]
 
-            if secrets_filter is "all" or s["secret_type"] == secrets_filter:
+            if secrets_filter == "all" or s["secret_type"] == secrets_filter:
                 secret_list.append(s)
 
         page += 1
