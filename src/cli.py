@@ -1094,7 +1094,7 @@ def mass_deploy(
         reviewer_res = None
         mend_res = 0
 
-        logging.info(f"{repo}....", end="")
+        logging.info(f"{repo}....")
 
         if actions_enable:
             actions_res = actions.set_permissions(
