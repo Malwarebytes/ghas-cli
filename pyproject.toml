@@ -28,7 +28,7 @@ requests = "*"
 colorama = "*"
 configparser = "*"
 python-magic = "*"
-urllib3 = "^1.26.12"
+urllib3 = ">=1.26.12,<3.0.0"
 
 [tool.poetry.dev-dependencies]
 
