@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 
-from typing import Dict, List
+from typing import List
 import requests
 import json
 import time
