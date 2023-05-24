@@ -838,7 +838,7 @@ def dependabot_alerts_list(
 
     for repo in repos:
         dependabot_res = dependabot.list_alerts_repo(
-            repository=repository,
+            repository=repo,
             organization=organization,
             token=token,
         )
