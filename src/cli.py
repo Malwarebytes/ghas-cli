@@ -847,6 +847,39 @@ def dependabot_alerts_list(
             click.echo(res)
 
 
+@dependabot_alerts.command("get_dependencies")
+@click.option(
+    "-f",
+    "--format",
+    prompt="Output format",
+    type=click.Choice(
+        ["sbom", "csv", "txt"],
+        case_sensitive=True,
+    ),
+    default="sbom",
+)
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def dependabot_get_dependencies(repository:str, organization:str, token:str, format: str="sbom") -> None:
+    """Get a list of dependencies for a repository"""
+
+    res = dependabot.get_dependencies(repository, organization, token, format=format)
+    click.echo(res)
+
 ###########
 # Actions #
 ###########
