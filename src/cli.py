@@ -804,13 +804,13 @@ def secret_alerts_export(
 ##############
 
 
-@cli.group()
+@cli.group(name="dependabot")
 def dependabot_alerts() -> None:
     """Manage Dependabot alerts"""
     pass
 
 
-@dependabot_alerts.command("list")
+@dependabot_alerts.command("get_alerts")
 @click.option(
     "-r",
     "--repos",
