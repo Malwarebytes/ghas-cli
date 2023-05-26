@@ -402,7 +402,7 @@ def load_codeql_base64_template(
 ) -> str:
     with open(f"./templates/codeql-analysis-default.yml", "r") as f:
         data = "".join(f.readlines())
-        data = data.replace("""branches: [ ]""", f"""branches: [{', '.join(f"'branch'" for branch in branches)   }]""")
+        data = data.replace("""branches: [ ]""", f"""branches: [{', '.join(f"'{branch}'" for branch in branches)   }]""")
         data = data.replace("""language: [ ]""", f"""language: {languages}""")
         return base64.b64encode(data.encode("utf-8")).decode("utf-8")
 
@@ -493,7 +493,7 @@ def create_codeql_pr(
         "content": template,
         "branch": target_branch,
         "sha": get_file_sha(
-            organization, repository, headers, ".github/workflows/codeql.yml"
+            organization, repository, headers, ".github/workflows/codeql-analysis-default.yml"
         ),
     }
 
@@ -501,7 +501,7 @@ def create_codeql_pr(
         workflow_commit_payload["message"] = "Update CodeQL analysis workflow"
 
     workflow_commit_resp = network.put(
-        url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql.yml",
+        url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis-default.yml",
         headers=headers,
         json=workflow_commit_payload,
     )
