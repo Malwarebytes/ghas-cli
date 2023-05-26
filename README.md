@@ -1,6 +1,9 @@
-# Security-ghas-cli
+# ghas-cli
 
-[![CodeQL](https://github.com/Malwarebytes/Security-ghas-cli/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Malwarebytes/Security-ghas-cli/actions/workflows/codeql-analysis.yml)
+[![CodeQL](https://github.com/Malwarebytes/ghas-cli/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Malwarebytes/ghas-cli/actions/workflows/codeql-analysis.yml)
+[![Downloads](https://static.pepy.tech/personalized-badge/ghas-cli?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/ghas-cli)
+[![Supported Versions](https://img.shields.io/pypi/pyversions/ghas-cli.svg)](https://pypi.org/project/ghas-cli)
+[![Contributors](https://img.shields.io/github/contributors/malwarebytes/ghas-cli.svg)](https://github.com/malwarebytes/ghas-cli/graphs/contributors)
 
 CLI utility to interact with [GitHub Advanced Security](https://docs.github.com/en/enterprise-cloud@latest/get-started/learning-about-github/about-github-advanced-security) (_"GHAS"_).
 
@@ -27,7 +30,7 @@ You can work on a single repository or on thousands of them. In that case, `ghas
 
 ## Installation
 
-Builds are available in the [`Releases`](https://github.com/Malwarebytes/Security-ghas-cli/releases) tab.
+Builds are available in the [`Releases`](https://github.com/Malwarebytes/ghas-cli/releases) tab.
 
 * Pypi:
 
@@ -45,7 +48,7 @@ python -m pip install /full/path/to/ghas-cli-xxx.whl
 
 ## Usage
 
-`ghas-cli -h` or see the [wiki](https://github.com/Malwarebytes/Security-ghas-cli/wiki).
+`ghas-cli -h` or see the [wiki](https://github.com/Malwarebytes/ghas-cli/wiki).
 
 
 ## Development

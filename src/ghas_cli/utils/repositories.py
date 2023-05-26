@@ -3,10 +3,10 @@
 
 from typing import List, Any
 import base64
-import requests
 from . import network
 import time
 import datetime
+import logging
 
 
 class Repository:
@@ -62,7 +62,7 @@ class Repository:
         self.url = obj["html_url"]
         self.description = obj["description"]
         self.main_language = obj["language"]
-        self.languages = get_languages(self.orga, token, self.name, False, False)
+        self.languages = get_languages(self.orga, token, self.name)
         self.default_branch = obj["default_branch"]
         try:
             self.license = obj["license"]["spdx_id"]
@@ -172,7 +172,7 @@ def get_org_repositories(
 
         if repos.status_code != 200:
             break
-    
+
         if [] == repos.json():
             break
 
@@ -182,27 +182,27 @@ def get_org_repositories(
             # repo.load_json(r, token=None)
 
             if language != "" and repo.main_language != language:
-                print(
+                logging.info(
                     f"{repo.name} ignored because of language: {language} vs. {repo.main_language}"
                 )
                 continue
             if default_branch != "" and repo.default_branch != default_branch:
-                print(
+                logging.info(
                     f"{repo.name} ignored because of default branch: {default_branch} vs. {repo.default_branch}"
                 )
                 continue
             if license != "" and repo.license != license:
-                print(
+                logging.info(
                     f"{repo.name} ignored because of license: {license} vs. {repo.license}"
                 )
                 continue
             if repo.archived != archived:
-                print(
+                logging.info(
                     f"{repo.name} ignored because of archived: {archived} vs. {repo.archived}"
                 )
                 continue
             if repo.disabled != disabled:
-                print(
+                logging.info(
                     f"{repo.name} ignored because of license: {archived} vs. {repo.archived}"
                 )
                 continue
@@ -364,104 +364,65 @@ def get_languages(
     organization: str,
     token: str,
     repository: str,
-    only_interpreted: False,
-    only_codeql: False,
+    only_codeql: bool = False,
 ) -> List:
     """Get the main language for a repository"""
 
-    interpreted_languages = {"javascript", "python", "ruby"}
-    aliased_interpreted_languages = {"typescript": "javascript"}
+    codeql_languages = ["cpp", "csharp", "go", "java", "javascript", "python", "ruby"]
+    codeql_aliased_languages = {
+        "typescript": "javascript",
+        "kotlin": "java",
+        "c#": "csharp",
+        "c++": "cpp",
+    }
 
     headers = network.get_github_headers(token)
-    languages = network.get(
+    languages_resp = network.get(
         url=f"https://api.github.com/repos/{organization}/{repository}/languages",
         headers=headers,
     )
-    if languages.status_code != 200:
+
+    if languages_resp.status_code != 200:
+        logging.warn(f"Received status code {languages_resp.status_code} while retrieving repository languages.")
         return ["default"]
 
-    lang = set()
-    for l in languages.json():
-        if only_interpreted:
-            if l.lower() in interpreted_languages:
-                lang.add(l.lower())
-            else:
-                if only_codeql:
-                    try:
-                        lang.add(aliased_interpreted_languages[l.lower()])
-                    except Exception as e:
-                        continue
+    languages = list()
+    for language in [l.lower() for l in languages_resp.json()]:
+        if only_codeql:
+            if language in codeql_languages:
+                languages.append(language)
+            elif language in codeql_aliased_languages:
+                languages.append(codeql_aliased_languages[language])
         else:
-            lang.add(l.lower())
+            languages.append(language)
 
-    if not lang:
-        return ["default"]
-    else:
-        return list(lang)
+    return languages
 
 
-def load_codeql_base64_template(language: str, default_branch: str = "main") -> tuple:
-    language = language.lower()
-    try:
-        with open(f"./templates/codeql-analysis-{language.lower()}.yml", "r") as f:
-            # Ugly af but `yaml` transforms `on:` to `True:` which is obviously annoying to parse GitHub Actions files..
-            template = f.readlines()
-            template_new = ""
-            for l in template:
-                if l == '    branches: ["main"]\n':
-                    template_new += f"    branches: ['{default_branch}']\n"
-                else:
-                    template_new += l
-    except Exception as e:
-        with open(f"./templates/codeql-analysis-default.yml", "r") as f:
-            language = "default"
-            template = f.readlines()
-            template_new = ""
-            for l in template:
-                if l == '    branches: ["main"]\n':
-                    template_new += f"    branches: ['{default_branch}']\n"
-                else:
-                    template_new += l
-    return language, str(
-        base64.b64encode(template_new.encode(encoding="utf-8")), "utf-8"
-    )
+def load_codeql_base64_template(
+    languages: List, branches: List = ["main"]
+) -> str:
+    with open(f"./templates/codeql-analysis-default.yml", "r") as f:
+        data = "".join(f.readlines())
+        data = data.replace("""branches: [ ]""", f"""branches: [{', '.join(f"'{branch}'" for branch in branches)   }]""")
+        data = data.replace("""language: [ ]""", f"""language: {languages}""")
+        return base64.b64encode(data.encode("utf-8")).decode("utf-8")
 
 
-def load_codeql_config_base64_template(language: str) -> tuple:
-    language = language.lower()
-    try:
-        with open(f"./templates/codeql-config-{language.lower()}.yml", "r") as f:
-            template = f.read()
-    except Exception as e:
-        with open(f"./templates/codeql-config-default.yml", "r") as f:
-            template = f.read()
-    return language, str(base64.b64encode(template.encode(encoding="utf-8")), "utf-8")
+def load_codeql_config_base64_template() -> str:
+    with open(f"./templates/codeql-config-default.yml", "r") as f:
+        template = f.read()
+        return base64.b64encode(template.encode(encoding="utf-8")).decode("utf-8")
 
 
-def create_codeql_pr(
-    organization: str,
-    token: str,
-    repository: str,
-    target_branch: str = "appsec-ghas-codeql_enable",
-) -> bool:
-    """
-    1. Retrieve the repository languages. Select the `codeql-analysis.yml` file for that language.
-    2. Create a branch
-    3. Push a .github/workflows/codeql-analysis.yml to the repository on that branch
-    3. Create an associated PR
-    """
-    headers = network.get_github_headers(token)
-
-    # Get the default branch
-    default_branch = get_default_branch(organization, token, repository)
-    if not default_branch:
-        return False
-
-    # Create a branch
+def create_branch(
+    headers, organization: str, repository: str, default_branch: str, target_branch: str
+):
     branch_resp = network.get(
         url=f"https://api.github.com/repos/{organization}/{repository}/git/refs/heads",
         headers=headers,
     )
+
     if branch_resp.status_code != 200:
         return False
 
@@ -485,55 +446,124 @@ def create_codeql_pr(
         json=payload,
     )
 
-    if branch_resp.status_code != 201:
+    if branch_resp.status_code == 422:
+        logging.error("Branch already exists")
+        return False
+
+    if branch_resp.status_code == 201:
+        return True
+
+    return False
+
+
+def create_codeql_pr(
+    organization: str,
+    token: str,
+    repository: str,
+    target_branch: str = "appsec-ghas-codeql_enable",
+) -> bool:
+    """
+    1. Retrieve the repository languages. Select the `codeql-analysis.yml` file for that language.
+    2. Create a branch
+    3. Push a .github/workflows/codeql-analysis.yml to the repository on that branch
+    3. Create an associated PR
+    """
+    headers = network.get_github_headers(token)
+
+    # Get the default branch
+    default_branch = get_default_branch(organization, token, repository)
+    if not default_branch:
+        return False
+
+    # Create a branch
+    new_branch = create_branch(
+        headers, organization, repository, default_branch, target_branch
+    )
+
+    if not new_branch:
+        logging.error(f"Couldn't create branch {target_branch}")
         return False
 
     # Create commit
-    languages = get_languages(
-        organization, token, repository, only_interpreted=True, only_codeql=True
+
+    languages = get_languages(organization, token, repository, only_codeql=True)
+
+    # Workflow config
+    template = load_codeql_base64_template(languages, [default_branch])
+    workflow_commit_payload = {
+        "message": f"Create CodeQL analysis workflow",
+        "content": template,
+        "branch": target_branch,
+        "sha": get_file_sha(
+            organization, repository, headers, ".github/workflows/codeql-analysis-default.yml"
+        ),
+    }
+
+    if workflow_commit_payload["sha"]:
+        workflow_commit_payload["message"] = "Update CodeQL analysis workflow"
+
+    workflow_commit_resp = network.put(
+        url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis-default.yml",
+        headers=headers,
+        json=workflow_commit_payload,
     )
 
-    for language in languages:
-        # Workflow config
-        lang, template = load_codeql_base64_template(language, default_branch)
-        payload = {
-            "message": f"Enable CodeQL analysis for {language}",
-            "content": template,
-            "branch": target_branch,
-        }
-
-        commit_resp = network.put(
-            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/codeql-analysis-{lang}.yml",
-            headers=headers,
-            json=payload,
+    if workflow_commit_resp.status_code not in [200, 201]:
+        logging.error(
+            f"Commit response for CodeQL workflow: {workflow_commit_resp.status_code}"
         )
+        return False
 
-        if commit_resp.status_code != 201:
-            return False
+    # CodeQL config file
+    template = load_codeql_config_base64_template()
+    config_commit_payload = {
+        "message": f"Create CodeQL config file",
+        "content": template,
+        "branch": target_branch,
+        "sha": get_file_sha(
+            organization,
+            repository,
+            headers,
+            ".github/codeql/codeql-config-default.yml",
+        ),
+    }
 
-        # CodeQL config file
-        lang, template = load_codeql_config_base64_template(language)
-        payload = {
-            "message": f"Enable CodeQL config file for {language}",
-            "content": template,
-            "branch": target_branch,
-        }
+    if config_commit_payload["sha"]:
+        config_commit_payload["message"] = "Update CodeQL config file"
 
-        commit_resp = network.put(
-            url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/codeql/codeql-config-{lang}.yml",
-            headers=headers,
-            json=payload,
+    config_commit_resp = network.put(
+        url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/codeql/codeql-config-default.yml",
+        headers=headers,
+        json=config_commit_payload,
+    )
+
+    if config_commit_resp.status_code not in [200, 201]:
+        logging.error(
+            f"Commit response for CodeQL config: {config_commit_resp.status_code}"
         )
-        if commit_resp.status_code != 201:
-            return False
+        return False
 
-    # Create PR
-    payload = {
-        "title": "Security Code Scanning - configuration files",
-        "body": f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({languages}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team.",
+    is_config_update = (
+        workflow_commit_payload["sha"] != None or config_commit_payload["sha"] != None
+    )
+
+    pr_payload = {
         "head": target_branch,
         "base": default_branch,
     }
+
+    if is_config_update:
+        logging.info(f"Updating configuration for {repository}")
+        pr_payload["title"] = "Security Code Scanning - updated configuration files"
+        pr_payload[
+            "body"
+        ] = f"This PR updates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team."
+    else:
+        logging.info(f"Creating configuration for {repository}")
+        pr_payload["title"] = "Security Code Scanning - configuration files"
+        pr_payload[
+            "body"
+        ] = f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team."
 
     # Retry if rate-limited
     i = 0
@@ -541,7 +571,7 @@ def create_codeql_pr(
         pr_resp = network.post(
             url=f"https://api.github.com/repos/{organization}/{repository}/pulls",
             headers=headers,
-            json=payload,
+            json=pr_payload,
         )
         if pr_resp.status_code == 201:
             return True
@@ -552,6 +582,7 @@ def create_codeql_pr(
         i += 1
 
     if pr_resp.status_code != 201:
+        print(pr_resp.json())
         return False
 
     return True
@@ -586,37 +617,15 @@ def create_dependency_enforcement_pr(
         return False
 
     # Create a branch
-    branch_resp = network.get(
-        url=f"https://api.github.com/repos/{organization}/{repository}/git/refs/heads",
-        headers=headers,
-    )
-    if branch_resp.status_code != 200:
-        return False
 
-    refs = branch_resp.json()
-    sha1 = ""
-    for ref in refs:
-        if ref["ref"] == f"refs/heads/{default_branch}":
-            sha1 = ref["object"]["sha"]
-
-    if sha1 == "":
-        return False
-
-    payload = {
-        "ref": f"refs/heads/{target_branch}",
-        "sha": sha1,
-    }
-
-    branch_resp = network.post(
-        url=f"https://api.github.com/repos/{organization}/{repository}/git/refs",
-        headers=headers,
-        json=payload,
+    new_branch = create_branch(
+        headers, organization, repository, default_branch, target_branch
     )
 
-    if branch_resp.status_code != 201:
+    if not new_branch:
         return False
 
-    # Create commit
+    # # Create commit
     template = load_dependency_review_base64_template()
     payload = {
         "message": f"Enable Dependency reviewer",
@@ -661,3 +670,13 @@ def create_dependency_enforcement_pr(
         return False
 
     return True
+
+
+def get_file_sha(organization, repository, headers, file):
+    file_resp = network.get(
+        url=f"https://api.github.com/repos/{organization}/{repository}/contents/{file}",
+        headers=headers,
+    )
+    if file_resp.status_code == 200:
+        return file_resp.json()["sha"]
+    return None

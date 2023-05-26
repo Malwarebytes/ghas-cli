@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ghas-cli"
-version = "1.4.1"
+version = "1.5.0"
 description = "Command line interface to interact with GitHub Advanced Security."
 authors = ["jboursier <jboursier@malwarebytes.com>"]
 license = "MIT"
@@ -28,7 +28,7 @@ requests = "*"
 colorama = "*"
 configparser = "*"
 python-magic = "*"
-urllib3 = "^1.26.12"
+urllib3 = ">=1.26.12,<3.0.0"
 
 [tool.poetry.dev-dependencies]
 
