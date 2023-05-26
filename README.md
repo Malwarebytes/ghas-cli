@@ -1,6 +1,9 @@
 # ghas-cli
 
 [![CodeQL](https://github.com/Malwarebytes/ghas-cli/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Malwarebytes/ghas-cli/actions/workflows/codeql-analysis.yml)
+[![Downloads](https://static.pepy.tech/personalized-badge/ghas-cli?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/ghas-cli)
+[![Supported Versions](https://img.shields.io/pypi/pyversions/ghas-cli.svg)](https://pypi.org/project/ghas-cli)
+[![Contributors](https://img.shields.io/github/contributors/malwarebytes/ghas-cli.svg)](https://github.com/malwarebytes/ghas-cli/graphs/contributors)
 
 CLI utility to interact with [GitHub Advanced Security](https://docs.github.com/en/enterprise-cloud@latest/get-started/learning-about-github/about-github-advanced-security) (_"GHAS"_).
 
