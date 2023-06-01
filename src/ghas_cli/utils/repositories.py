@@ -237,10 +237,12 @@ def get_default_branch_last_updated(
     )
 
 
-def archive(organization: str, token: str, repository: str) -> bool:
+def archive(
+    organization: str, token: str, repository: str, archive: bool = True
+) -> bool:
     headers = network.get_github_headers(token)
 
-    payload = {"archived": True}
+    payload = {"archived": archive}
 
     status = network.patch(
         url=f"https://api.github.com/repos/{organization}/{repository}",

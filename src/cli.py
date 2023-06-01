@@ -3,7 +3,7 @@
 
 __author__ = "jboursier"
 __copyright__ = "Copyright 2023, Malwarebytes"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __maintainer__ = "jboursier"
 __email__ = "jboursier@malwarebytes.com"
 __status__ = "Production"
@@ -479,7 +479,33 @@ def repositories_archive(
     token: str,
 ) -> None:
     """Archive a repository"""
-    click.echo(repositories.archive(organization, token, repository))
+    click.echo(repositories.archive(organization, token, repository, archive=True))
+
+
+@repositories_cli.command("unarchive")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def repositories_unarchive(
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Unarchive a repository"""
+    click.echo(repositories.archive(organization, token, repository, archive=False))
 
 
 #########
@@ -1275,11 +1301,45 @@ def mass_archive(
         click.echo(f"{repo}...", nl=False)
 
         if repositories.archive(
-            organization=organization, token=token, repository=repo
+            organization=organization, token=token, repository=repo, archive=True
         ):
             click.echo(" Archived.")
         else:
             click.echo(" Not Archived.", err=True)
+
+
+@mass_cli.command("unarchive")
+@click.argument("input_repos_list", type=click.File("r"))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_unarchive(
+    input_repos_list: Any,
+    organization: str,
+    token: str,
+) -> None:
+    repos_list = input_repos_list.readlines()
+
+    for repo in repos_list:
+
+        repo = repo.rstrip("\n")
+
+        click.echo(f"{repo}...", nl=False)
+
+        if repositories.archive(
+            organization=organization, token=token, repository=repo, archive=False
+        ):
+            click.echo(" Unarchived.")
+        else:
+            click.echo(" Not Unarchived.", err=True)
 
 
 @mass_cli.command("issue_upcoming_archive")
