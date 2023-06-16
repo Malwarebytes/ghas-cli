@@ -1315,7 +1315,7 @@ This means that it will become read-only: `git clone` will still work, and the r
 
 For more information, see https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories#about-repository-archival
 
-If you think this is a mistake, please inform the Security team *ASAP* on Slack at `#github-appsec-security`.
+If you think this is a mistake, please inform the Security team *ASAP* on Teams at  `Corp DevOps / Github Community`.
 
 Thanks! :handshake:""",
             repository=repo,
