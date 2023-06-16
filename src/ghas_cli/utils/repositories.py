@@ -289,7 +289,6 @@ def enable_secret_scanner(organization: str, token: str, repository: str) -> boo
         headers=headers,
         json=payload,
     )
-    print(status.json())
 
     if status.status_code != 200:
         return False
@@ -317,7 +316,6 @@ def enable_secret_scanner_push_protection(
         headers=headers,
         json=payload,
     )
-    print(status.json())
 
     if status.status_code != 200:
         return False
