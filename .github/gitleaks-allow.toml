@@ -1,0 +1,4 @@
+[AllowList]
+  Files = ["enable_ghas\\.sh"]
+Paths = []
+Regexes = []
