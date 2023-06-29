@@ -28,4 +28,4 @@ We are here to help.
 
 Thanks!
 
-Github Administrative Team :)
+Github Administrative Team
