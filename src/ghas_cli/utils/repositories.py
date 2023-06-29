@@ -557,13 +557,13 @@ def create_codeql_pr(
         pr_payload["title"] = "Security Code Scanning - updated configuration files"
         pr_payload[
             "body"
-        ] = f"This PR updates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and ask questions in the Teams 'Corp DevOps / Github Community` channel. if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Github Administrative team."
+        ] = f"This PR updates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \n\nHowever, we encourage you to review the configuration files and ask questions in the Teams 'Corp DevOps / Github Community` channel. if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Github Administrative team."
     else:
         logging.info(f"Creating configuration for {repository}")
         pr_payload["title"] = "Security Code Scanning - configuration files"
         pr_payload[
             "body"
-        ] = f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and ask questions in the Teams `Corp DevOps / Community` channel. if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Github Administrative team."
+        ] = f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \n\nHowever, we encourage you to review the configuration files and ask questions in the Teams `Corp DevOps / Community` channel. if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Github Administrative team."
 
     # Retry if rate-limited
     i = 0
@@ -644,7 +644,7 @@ def create_dependency_enforcement_pr(
     # Create PR
     payload = {
         "title": "Dependency reviewer",
-        "body": f"This PR enables the Dependency Reviewer in your repository. It is enabled to prevent vulnerable dependencies from reaching your codebase. In most cases you will be able to merge this PR as is and start benefiting from its features right away, as a check in each PR. \nHowever, we encourage you to reach out in the `Corp DevOps / Github Community` Teams channel if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Github Administrative team.",
+        "body": f"This PR enables the Dependency Reviewer in your repository. It is enabled to prevent vulnerable dependencies from reaching your codebase. In most cases you will be able to merge this PR as is and start benefiting from its features right away, as a check in each PR. \n\nHowever, we encourage you to reach out in the `Corp DevOps / Github Community` Teams channel if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Github Administrative team.",
         "head": target_branch,
         "base": default_branch,
     }
