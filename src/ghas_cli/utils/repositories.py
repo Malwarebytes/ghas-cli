@@ -13,7 +13,7 @@ class Repository:
     def __init__(
         self,
         name="",
-        orga="Malwarebytes",
+        orga="tyler-technologies",
         owner="",
         url="",
         description="",
@@ -554,16 +554,19 @@ def create_codeql_pr(
 
     if is_config_update:
         logging.info(f"Updating configuration for {repository}")
+        codeql_config_update_text = open("./templates/codeql_config_update.md", "r").read()
+
         pr_payload["title"] = "Security Code Scanning - updated configuration files"
         pr_payload[
             "body"
-        ] = f"This PR updates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \n\nHowever, we encourage you to review the configuration files and ask questions in the Teams 'Corp DevOps / Github Community` channel. if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Github Administrative team."
+        ] = codeql_config_update_text
     else:
         logging.info(f"Creating configuration for {repository}")
+        codeql_config_create_text = open("./templates/codeql_config_create.md", "r").read()
         pr_payload["title"] = "Security Code Scanning - configuration files"
         pr_payload[
             "body"
-        ] = f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \n\nHowever, we encourage you to review the configuration files and ask questions in the Teams `Corp DevOps / Community` channel. if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Github Administrative team."
+        ] = codeql_config_create_text
 
     # Retry if rate-limited
     i = 0
@@ -609,6 +612,7 @@ def create_dependency_enforcement_pr(
     3. Push a .github/workflows/dependency_enforcement.yml to the repository on that branch
     3. Create an associated PR
     """
+    print(f"Creating dependency enforcement PR for {repository}")
     headers = network.get_github_headers(token)
 
     # Get the default branch
@@ -625,6 +629,7 @@ def create_dependency_enforcement_pr(
     if not new_branch:
         return False
 
+    print(f"Created branch {target_branch} for {repository}")
     # # Create commit
     template = load_dependency_review_base64_template()
     payload = {
@@ -633,6 +638,7 @@ def create_dependency_enforcement_pr(
         "branch": target_branch,
     }
 
+    print(f"Creating commit for {repository}")
     commit_resp = network.put(
         url=f"https://api.github.com/repos/{organization}/{repository}/contents/.github/workflows/dependency_enforcement.yml",
         headers=headers,
@@ -642,9 +648,11 @@ def create_dependency_enforcement_pr(
         return False
 
     # Create PR
+    create_pr_body = open("./templates/dependency_reviewer_enabled_pr_body.md", "r").read()
+
     payload = {
         "title": "Dependency reviewer",
-        "body": f"This PR enables the Dependency Reviewer in your repository. It is enabled to prevent vulnerable dependencies from reaching your codebase. In most cases you will be able to merge this PR as is and start benefiting from its features right away, as a check in each PR. \n\nHowever, we encourage you to reach out in the `Corp DevOps / Github Community` Teams channel if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Github Administrative team.",
+        "body": create_pr_body,
         "head": target_branch,
         "base": default_branch,
     }
