@@ -4,4 +4,4 @@ However, we encourage you to reach out in the `Corp DevOps / Github Community` T
 
 We are here to help! :thumbsup:
 
-- Github Administrative Team.
+Github Admins

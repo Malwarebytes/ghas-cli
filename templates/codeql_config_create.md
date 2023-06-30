@@ -6,4 +6,6 @@ However, we encourage you to review the configuration files and ask questions in
 
 We are here to help! :thumbsup:
 
-- Github Administrative Team
+Regards,
+
+Github Admins
