@@ -2,4 +2,4 @@ This PR updates the Security scanning (CodeQL) configuration files for your repo
 
 However, we encourage you to review the configuration files and ask questions in the Teams 'Corp DevOps / Github Community` channel. if you have any questions.\n\nWe are here to help! :thumbsup:
 
- - Github Administrative Team
+- Github Administrative Team
