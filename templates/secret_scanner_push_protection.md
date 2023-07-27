@@ -10,10 +10,10 @@ The purpose of this issue is:
 - Give you some context as to why Secret Scanning Push Protection is now enabled.
 - Provide you with some links to help you understand what Secret Scanning and GitHub Advanced Security are.
 
-As a company, Tyler Technologies is  deploying Secret Scanning on our repositories. We are now going one step further, by preventing new secrets from completely reaching our codebase using Secret Scanning Push Protection.
+As a company, Tyler Technologies is  deploying Secret Scanning on our repositories. We are now going one step further, by preventing new secrets from reaching our codebase using Secret Scanning Push Protection.
 
 We didn't expect you to have to go and manually turn it on for every single repository, so here's a notice saying that we've done it for you.
-We are rolling out Secret Scanning Push Protection per teams, so if you have only got a informative notice for a few of your repositories, not to worry, more will come soon.
+We are rolling out Secret Scanning Push Protection repository by repository, so if you have only got a informative notice for a few of your repositories, not to worry, more will come soon.
 
 We want to make sure **you** are empowered to maintain the security of your repositories. Thus we count on you to properly react when a secret scanning alert is triggered, following the documentation below:
 
@@ -30,4 +30,4 @@ We are here to help.
 
 Thanks!
 
-Github Administrative Team
+Github Admins
