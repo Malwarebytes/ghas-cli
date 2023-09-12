@@ -55,3 +55,9 @@ jobs:
       uses: github/codeql-action/analyze@v2
       with:
         category: "/language:${{matrix.language}}"
+    env:
+      ARTIFACTORY_NPM_REGISTRY: ${{secrets.SCRATCH_ARTIFACTORY_NPM_REGISTRY}}
+      ARTIFACTORY_NUGET_REGISTRY: ${{secrets.SCRATCH_ARTIFACTORY_NUGET_REGISTRY}}
+      ARTIFACTORY_PASSWORD: ${{secrets.SCRATCH_ARTIFACTORY_PASSWORD}}
+      ARTIFACTORY_TOKEN: ${{secrets.SCRATCH_ARTIFACTORY_TOKEN}}
+      ARTIFACTORY_USERNAME: ${{secrets.SCRATCH_ARTIFACTORY_USERNAME}}  
