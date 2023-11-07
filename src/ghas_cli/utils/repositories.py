@@ -323,7 +323,7 @@ def enable_secret_scanner_push_protection(
         return True
 
 
-def enable_dependabot(organization: str, token: str, repository: str) -> bool:
+def enable_dependabot(organization: str, token: str, repository: str, skipfix: bool = False) -> bool:
     headers = network.get_github_headers(token)
 
     status_alerts = network.put(
@@ -331,10 +331,15 @@ def enable_dependabot(organization: str, token: str, repository: str) -> bool:
         headers=headers,
     )
 
-    status_fixes = network.put(
-        url=f"https://api.github.com/repos/{organization}/{repository}/automated-security-fixes",
-        headers=headers,
-    )
+    if not skipfix:
+        status_fixes = network.put(
+            url=f"https://api.github.com/repos/{organization}/{repository}/automated-security-fixes",
+            headers=headers,
+        )
+    else:
+        logging.info(f"skipping enabling the automated security fixes on this repo: {repository}")
+        status_fixes = 204
+
 
     if status_alerts.status_code != 204 and status_fixes != 204:
         return False
@@ -400,9 +405,16 @@ def get_languages(
 
 
 def load_codeql_base64_template(
-    languages: List, branches: List = ["main"]
+        languages: List, branches: List = ["main"], override_template: bool = False
 ) -> str:
-    with open(f"./templates/codeql-analysis-default.yml", "r") as f:
+
+    # filter duplicate branches and language version out
+    languages = list(set(languages))
+    branches = list(set(branches))
+
+    template_file = 'codeql-analysis-energov.yml' if override_template == True else 'codeql-analysis-default.yml'
+
+    with open(f"./templates/{template_file}", "r") as f:
         data = "".join(f.readlines())
         data = data.replace("""branches: [ ]""", f"""branches: [{', '.join(f"'{branch}'" for branch in branches)   }]""")
         data = data.replace("""language: [ ]""", f"""language: {languages}""")
@@ -461,6 +473,7 @@ def create_codeql_pr(
     token: str,
     repository: str,
     target_branch: str = "appsec-ghas-codeql_enable",
+    override_template: bool = False
 ) -> bool:
     """
     1. Retrieve the repository languages. Select the `codeql-analysis.yml` file for that language.
@@ -474,7 +487,7 @@ def create_codeql_pr(
     default_branch = get_default_branch(organization, token, repository)
     if not default_branch:
         return False
-    
+
     # Create a branch
     new_branch = create_branch(
         headers, organization, repository, default_branch, target_branch
@@ -487,9 +500,9 @@ def create_codeql_pr(
     # Create commit
     languages = get_languages(organization, token, repository, only_codeql=True)
 
-    
+
     # Workflow config
-    template = load_codeql_base64_template(languages, [default_branch])
+    template = load_codeql_base64_template(languages, [default_branch], override_template)
     workflow_commit_payload = {
         "message": f"Create CodeQL analysis workflow",
         "content": template,

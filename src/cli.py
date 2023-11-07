@@ -3,7 +3,7 @@
 
 __author__ = "jboursier"
 __copyright__ = "Copyright 2023, Malwarebytes"
-__version__ = "1.5.2"
+__version__ = "1.5.3"
 __maintainer__ = "jboursier"
 __email__ = "jboursier@malwarebytes.com"
 __status__ = "Production"
@@ -297,13 +297,16 @@ def repositories_enable_ss(
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
+
+@click.option("-s", "--skipfix", prompt="Skip fix", type=bool)
 def repositories_enable_dependabot(
     repository: str,
     organization: str,
     token: str,
+    skipfix: bool,
 ) -> None:
     """Enable Dependabot on a repository"""
-    click.echo(repositories.enable_dependabot(organization, token, repository))
+    click.echo(repositories.enable_dependabot(organization, token, repository, skipfix))
 
 
 @repositories_cli.command("create_codeql_pr")
@@ -329,13 +332,14 @@ def repositories_enable_dependabot(
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option("-e", "--energovtemplate", prompt="Energov template", type=bool, default=False)
 def repositories_create_codeql_pr(
-    repository: str, organization: str, token: str, branch: str
+        repository: str, organization: str, token: str, branch: str, override_template: bool
 ) -> None:
     """Create a CodeQL PR"""
     click.echo(
         repositories.create_codeql_pr(
-            organization, token, repository, target_branch=branch
+            organization, token, repository, target_branch=branch, override_template=False
         )
     )
 
