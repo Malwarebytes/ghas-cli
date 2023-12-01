@@ -56,15 +56,16 @@ def vuln_alerts() -> None:
     "-s",
     "--status",
     prompt="Alert status",
-    type=click.Choice(["open", "closed", ""], case_sensitive=False),
+    type=click.Choice(["open", "closed"], case_sensitive=False),
     default="open",
 )
 @click.option(
     "-r",
     "--repos",
     prompt="Repositories name. Use `all` to retrieve alerts for all repos.",
-    type=str,
-    multiple=True,
+    type=str
+    #,
+    #multiple=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
 @click.option(
@@ -97,6 +98,34 @@ def vulns_alerts_list(repos: str, organization: str, status: str, token: str) ->
     )
     click.echo(repositories_alerts)
     return repositories_alerts
+
+
+@vuln_alerts.command("org")
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option(
+    "-s",
+    "--status",
+    prompt="Alert status",
+    type=click.Choice(["open", "closed"], case_sensitive=False),
+    default="open",
+)
+def vulns_alerts_org(organization: str, status:str, token: str) -> Dict:
+    """Get CodeQL alerts for an entire org"""
+
+    org_alerts = vulns.get_codeql_alerts_org(organization, status, token)
+    for a in org_alerts:
+        click.echo(a)
+    return org_alerts
 
 
 ################
