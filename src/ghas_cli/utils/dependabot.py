@@ -74,7 +74,16 @@ def get_dependencies(repository: str, organization: str, token: str, format:str 
     elif "csv" == format:
         deps = ""
         for dep in dependencies.json()["sbom"]["packages"]:
-            deps += f"{dep['name']},{dep['versionInfo']}, {dep['licenseConcluded']}\n"
+            license = "Unknown"
+            try:
+                license = dep['licenseConcluded']
+            except:
+                try:
+                    license = dep['licenseDeclared']
+                except:
+                    license = "Unknown"
+
+            deps += f"{repository}, {dep['name']},{dep['versionInfo']}, {license}\n"
         return deps
     elif "txt" == format:
         deps = ""
