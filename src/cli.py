@@ -223,6 +223,31 @@ def repositories_list(
             output.write(r.name + "\n")
             click.echo(r.name)
 
+@repositories_cli.command("get_topics")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def repositories_get_topics(
+    repository: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Get a repository topics"""
+    click.echo(repositories.get_topics(organization, token, repository))
+
 
 @repositories_cli.command("enable_ss_protection")
 @click.option(
@@ -904,7 +929,7 @@ def dependabot_get_dependencies(repository:str, organization:str, token:str, for
     """Get a list of dependencies for a repository"""
 
     res = dependabot.get_dependencies(repository, organization, token, format=format)
-    click.echo(res)
+    click.echo(res, nl=False)
 
 ###########
 # Actions #
@@ -1474,6 +1499,71 @@ def mass_set_developer_role(
             click.echo(f"Failure to assign {permission} to {perms[0]} on {perms[1]}.")
 
     return None
+
+
+
+@mass_cli.command("topics")
+@click.argument("input_repos_list", type=click.File("r"))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def mass_get_topics(
+    input_repos_list: Any,
+    organization: str,
+    token: str,
+) -> None:
+    repos_list = input_repos_list.readlines()
+
+    for repo in repos_list:
+        repo = repo.rstrip("\n")
+
+        click.echo(f"{repo},", nl=False)
+        click.echo(repositories.get_topics(token, organization, repo))
+
+@mass_cli.command("dependencies")
+@click.argument("input_repos_list", type=click.File("r"))
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option(
+    "-f",
+    "--format",
+    prompt="Output format",
+    type=click.Choice(
+        ["sbom", "csv", "txt"],
+        case_sensitive=True,
+    ),
+    default="csv",
+)
+def mass_get_dependencies(
+    input_repos_list: Any,
+    organization: str,
+    token: str,
+) -> None:
+    repos_list = input_repos_list.readlines()
+
+    for repo in repos_list:
+        repo = repo.rstrip("\n")
+
+        click.echo(f"{repo},", nl=False)
+        click.echo(dependabot.get_dependencies(repo, organization, token, format=format))
+
 
 
 if __name__ == "__main__":

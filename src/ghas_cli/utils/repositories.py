@@ -236,6 +236,26 @@ def get_default_branch_last_updated(
         branch_res["commit"]["commit"]["author"]["date"].split("T")[0], "%Y-%m-%d"
     )
 
+def get_topics(
+    token: str, organization: str, repository_name: str
+) -> List:
+    """
+    Return the repository topics
+    """
+    headers = network.get_github_headers(token)
+
+    topic_res = network.get(
+        url=f"https://api.github.com/repos/{organization}/{repository_name}/topics",
+        headers=headers,
+    )
+
+    if topic_res.status_code != 200:
+        return False
+
+    topics_res = topic_res.json()
+
+    return topics_res['names']
+
 
 def archive(
     organization: str, token: str, repository: str, archive: bool = True
