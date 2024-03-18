@@ -1552,6 +1552,7 @@ def mass_get_topics(
     default="csv",
 )
 def mass_get_dependencies(
+    format: str,
     input_repos_list: Any,
     organization: str,
     token: str,
@@ -1562,7 +1563,7 @@ def mass_get_dependencies(
         repo = repo.rstrip("\n")
 
         click.echo(f"{repo},", nl=False)
-        click.echo(dependabot.get_dependencies(repository=repo, organization=organization, token=token, format=format))
+        click.echo(dependabot.get_dependencies(repository=repo, organization=organization, token=token, format=format), nl=False)
 
 
 
