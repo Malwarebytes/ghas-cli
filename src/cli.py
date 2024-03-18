@@ -246,7 +246,7 @@ def repositories_get_topics(
     token: str,
 ) -> None:
     """Get a repository topics"""
-    click.echo(repositories.get_topics(organization, token, repository))
+    click.echo(repositories.get_topics(token=token, organization=organization, repository_name=repository))
 
 
 @repositories_cli.command("enable_ss_protection")
@@ -1526,7 +1526,7 @@ def mass_get_topics(
         repo = repo.rstrip("\n")
 
         click.echo(f"{repo},", nl=False)
-        click.echo(repositories.get_topics(token, organization, repo))
+        click.echo(repositories.get_topics(token=token, organization=organization, repository_name=repo))
 
 @mass_cli.command("dependencies")
 @click.argument("input_repos_list", type=click.File("r"))
@@ -1562,7 +1562,7 @@ def mass_get_dependencies(
         repo = repo.rstrip("\n")
 
         click.echo(f"{repo},", nl=False)
-        click.echo(dependabot.get_dependencies(repo, organization, token, format=format))
+        click.echo(dependabot.get_dependencies(repository=repo, organization=organization, token=token, format=format))
 
 
 
