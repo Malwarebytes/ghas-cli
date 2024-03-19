@@ -74,7 +74,6 @@ def get_dependencies(repository: str, organization: str, token: str, format:str 
     elif "csv" == format:
         deps = ""
         for dep in dependencies.json()["sbom"]["packages"]:
-            license = "Unknown"
             try:
                 license = dep['licenseConcluded']
             except:
