@@ -27,7 +27,6 @@ def list_alerts_repo(repository: str, organization: str, token: str) -> List:
                 headers=headers,
             )
             if network.check_rate_limit(alerts):
-                time.sleep(network.SLEEP_1_MINUTE)
                 i += 1
             else:
                 break
