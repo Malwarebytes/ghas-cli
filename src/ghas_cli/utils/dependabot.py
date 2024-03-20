@@ -4,7 +4,6 @@
 from typing import List
 import requests
 import json
-import time
 import logging
 
 from . import network
