@@ -22,7 +22,7 @@ classifiers = [
 include = ["src/cli.py"]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4"
+python = ">=3.8,<4"
 click = ">=8"
 requests = "*"
 colorama = "*"
