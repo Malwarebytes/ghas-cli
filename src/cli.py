@@ -3,17 +3,18 @@
 
 __author__ = "jboursier"
 __copyright__ = "Copyright 2024, Malwarebytes"
-__version__ = "1.6.1"
+__version__ = "1.6.2"
 __maintainer__ = "jboursier"
 __email__ = "jboursier@malwarebytes.com"
 __status__ = "Production"
 
 try:
-    import click
     import json
-    from typing import Dict, Any, List
-    from datetime import datetime
     import logging
+    from datetime import datetime
+    from typing import Any, Dict, List
+
+    import click
 
     logging.getLogger().setLevel(level=logging.INFO)
 except ImportError:
@@ -22,7 +23,16 @@ except ImportError:
     logging.error("Missing dependencies. Please reach @jboursier if needed.")
     sys.exit(255)
 
-from ghas_cli.utils import repositories, vulns, teams, issues, actions, roles, secrets, dependabot
+from ghas_cli.utils import (
+    actions,
+    dependabot,
+    issues,
+    repositories,
+    roles,
+    secrets,
+    teams,
+    vulns,
+)
 
 
 def main() -> None:
@@ -223,6 +233,7 @@ def repositories_list(
             output.write(r.name + "\n")
             click.echo(r.name)
 
+
 @repositories_cli.command("get_topics")
 @click.option(
     "-r",
@@ -246,7 +257,11 @@ def repositories_get_topics(
     token: str,
 ) -> None:
     """Get a repository topics"""
-    click.echo(repositories.get_topics(token=token, organization=organization, repository_name=repository))
+    click.echo(
+        repositories.get_topics(
+            token=token, organization=organization, repository_name=repository
+        )
+    )
 
 
 @repositories_cli.command("enable_ss_protection")
@@ -925,11 +940,14 @@ def dependabot_alerts_list(
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
-def dependabot_get_dependencies(repository:str, organization:str, token:str, format: str="sbom") -> None:
+def dependabot_get_dependencies(
+    repository: str, organization: str, token: str, format: str = "sbom"
+) -> None:
     """Get a list of dependencies for a repository"""
 
     res = dependabot.get_dependencies(repository, organization, token, format=format)
     click.echo(res, nl=False)
+
 
 ###########
 # Actions #
@@ -1501,7 +1519,6 @@ def mass_set_developer_role(
     return None
 
 
-
 @mass_cli.command("topics")
 @click.argument("input_repos_list", type=click.File("r"))
 @click.option(
@@ -1526,7 +1543,12 @@ def mass_get_topics(
         repo = repo.rstrip("\n")
 
         click.echo(f"{repo},", nl=False)
-        click.echo(repositories.get_topics(token=token, organization=organization, repository_name=repo))
+        click.echo(
+            repositories.get_topics(
+                token=token, organization=organization, repository_name=repo
+            )
+        )
+
 
 @mass_cli.command("dependencies")
 @click.argument("input_repos_list", type=click.File("r"))
@@ -1563,8 +1585,12 @@ def mass_get_dependencies(
         repo = repo.rstrip("\n")
 
         click.echo(f"{repo},", nl=False)
-        click.echo(dependabot.get_dependencies(repository=repo, organization=organization, token=token, format=format), nl=False)
-
+        click.echo(
+            dependabot.get_dependencies(
+                repository=repo, organization=organization, token=token, format=format
+            ),
+            nl=False,
+        )
 
 
 if __name__ == "__main__":
