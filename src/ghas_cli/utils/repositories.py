@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 
-from typing import List, Any
 import base64
-from . import network
-import time
 import datetime
 import logging
+import secrets
+import time
+from typing import Any, List
+
+from . import network
 
 
 class Repository:
@@ -73,19 +75,19 @@ class Repository:
         self.updated_at = obj["updated_at"]
         try:
             self.ghas = obj["security_and_analysis"]["advanced_security"]["status"]
-        except Exception as e:
+        except Exception:
             self.ghas = False
         try:
             self.secret_scanner = obj["security_and_analysis"]["advanced_security"][
                 "secret_scanning"
             ]["status"]
-        except Exception as e:
+        except Exception:
             self.secret_scanner = False
         try:
             self.secret_push_prot = obj["security_and_analysis"]["advanced_security"][
                 "secret_scanning_push_protection"
             ]["status"]
-        except Exception as e:
+        except Exception:
             self.secret_push_prot = False
         self.dependabot = False
         if token:
@@ -236,9 +238,8 @@ def get_default_branch_last_updated(
         branch_res["commit"]["commit"]["author"]["date"].split("T")[0], "%Y-%m-%d"
     )
 
-def get_topics(
-    token: str, organization: str, repository_name: str
-) -> List:
+
+def get_topics(token: str, organization: str, repository_name: str) -> List:
     """
     Return the repository topics
     """
@@ -254,7 +255,7 @@ def get_topics(
 
     topics_res = topic_res.json()
 
-    return topics_res['names']
+    return topics_res["names"]
 
 
 def archive(
@@ -403,7 +404,9 @@ def get_languages(
     )
 
     if languages_resp.status_code != 200:
-        logging.warn(f"Received status code {languages_resp.status_code} while retrieving repository languages.")
+        logging.warn(
+            f"Received status code {languages_resp.status_code} while retrieving repository languages."
+        )
         return ["default"]
 
     languages = ["actions"] #https://github.blog/changelog/2024-12-17-find-and-fix-actions-workflows-vulnerabilities-with-codeql-public-preview/
@@ -419,18 +422,25 @@ def get_languages(
     return languages
 
 
-def load_codeql_base64_template(
-    languages: List, branches: List = ["main"]
-) -> str:
-    with open(f"./templates/codeql-analysis-default.yml", "r") as f:
+def load_codeql_base64_template(languages: List, branches: List = ["main"]) -> str:
+    minute = secrets.randbelow(60)
+    hour = secrets.randbelow(24)
+    day = secrets.randbelow(7)
+    with open("./templates/codeql-analysis-default.yml", "r") as f:
         data = "".join(f.readlines())
-        data = data.replace("""branches: [ ]""", f"""branches: [{', '.join(f"'{branch}'" for branch in branches)   }]""")
+        data = data.replace(
+            """branches: [ ]""",
+            f"""branches: [{', '.join(f"'{branch}'" for branch in branches)   }]""",
+        )
         data = data.replace("""language: [ ]""", f"""language: {languages}""")
+        data = data.replace(
+            """cron: '36 4 * * 3'""", f"""cron: '{minute} {hour} * * {day}'"""
+        )
         return base64.b64encode(data.encode("utf-8")).decode("utf-8")
 
 
 def load_codeql_config_base64_template() -> str:
-    with open(f"./templates/codeql-config-default.yml", "r") as f:
+    with open("./templates/codeql-config-default.yml", "r") as f:
         template = f.read()
         return base64.b64encode(template.encode(encoding="utf-8")).decode("utf-8")
 
@@ -511,11 +521,14 @@ def create_codeql_pr(
     # Workflow config
     template = load_codeql_base64_template(languages, [default_branch])
     workflow_commit_payload = {
-        "message": f"Create CodeQL analysis workflow",
+        "message": "Create CodeQL analysis workflow",
         "content": template,
         "branch": target_branch,
         "sha": get_file_sha(
-            organization, repository, headers, ".github/workflows/codeql-analysis-default.yml"
+            organization,
+            repository,
+            headers,
+            ".github/workflows/codeql-analysis-default.yml",
         ),
     }
 
@@ -537,7 +550,7 @@ def create_codeql_pr(
     # CodeQL config file
     template = load_codeql_config_base64_template()
     config_commit_payload = {
-        "message": f"Create CodeQL config file",
+        "message": "Create CodeQL config file",
         "content": template,
         "branch": target_branch,
         "sha": get_file_sha(
@@ -575,15 +588,15 @@ def create_codeql_pr(
     if is_config_update:
         logging.info(f"Updating configuration for {repository}")
         pr_payload["title"] = "Security Code Scanning - updated configuration files"
-        pr_payload[
-            "body"
-        ] = f"This PR updates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team."
+        pr_payload["body"] = (
+            f"This PR updates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team."
+        )
     else:
         logging.info(f"Creating configuration for {repository}")
         pr_payload["title"] = "Security Code Scanning - configuration files"
-        pr_payload[
-            "body"
-        ] = f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team."
+        pr_payload["body"] = (
+            f"This PR creates the Security scanning (CodeQL) configuration files for your repository languages ({', '.join(languages)}).\n\n We also just opened an informative issue in this repository to give you the context and assistance you need. In most cases you will be able to merge this PR as is and start benefiting from security scanning right away, as a check in each PR, and in the [Security tab](https://github.com/{organization}/{repository}/security/code-scanning) of this repository. \nHowever, we encourage you to review the configuration files and tag @{organization}/security-appsec (or `#github-appsec-security` on Slack) if you have any questions.\n\nWe are here to help! :thumbsup:\n\n - Application Security team."
+        )
 
     # Retry if rate-limited
     i = 0
@@ -612,7 +625,7 @@ def create_codeql_pr(
 
 
 def load_dependency_review_base64_template() -> str:
-    with open(f"./templates/dependency_enforcement.yml", "r") as f:
+    with open("./templates/dependency_enforcement.yml", "r") as f:
         template = f.read()
 
     return str(base64.b64encode(template.encode(encoding="utf-8")), "utf-8")
@@ -648,7 +661,7 @@ def create_dependency_enforcement_pr(
     # # Create commit
     template = load_dependency_review_base64_template()
     payload = {
-        "message": f"Enable Dependency reviewer",
+        "message": "Enable Dependency reviewer",
         "content": template,
         "branch": target_branch,
     }
