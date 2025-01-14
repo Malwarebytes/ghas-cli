@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 
 __author__ = "jboursier"
-__copyright__ = "Copyright 2024, Malwarebytes"
+__copyright__ = "Copyright 2025, Malwarebytes"
 __version__ = "1.6.2"
 __maintainer__ = "jboursier"
 __email__ = "jboursier@malwarebytes.com"
