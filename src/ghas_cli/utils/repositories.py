@@ -409,7 +409,7 @@ def get_languages(
         )
         return ["default"]
 
-    languages = list()
+    languages = ["actions"] #https://github.blog/changelog/2024-12-17-find-and-fix-actions-workflows-vulnerabilities-with-codeql-public-preview/
     for language in [l.lower() for l in languages_resp.json()]:
         if only_codeql:
             if language in codeql_languages:
