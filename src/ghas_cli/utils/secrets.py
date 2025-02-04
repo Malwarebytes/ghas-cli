@@ -42,6 +42,8 @@ def export_secrets(
             s["url"] = secret["url"]
             s["secret_type"] = secret["secret_type"]
             s["secret"] = secret["secret"]
+            s["validity"] = secret["validity"]
+            s["publicly_leaked"] = secret["publicly_leaked"]
 
             if secrets_filter == "all" or s["secret_type"] == secrets_filter:
                 secret_list.append(s)

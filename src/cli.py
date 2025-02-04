@@ -860,7 +860,7 @@ def secret_alerts_export(
     secrets_list = secrets.export_secrets(state, token, organization, secrets_filter)
     for secret in secrets_list:
         output_csv.write(
-            f"{secret['state']}, {secret['resolution']}, {secret['resolved_at']}, {secret['repository_full_name']}, {secret['url']}, {secret['secret_type']}, {secret['secret']}\n"
+            f"{secret['state']}, {secret['resolution']}, {secret['resolved_at']}, {secret['repository_full_name']}, {secret['url']}, {secret['secret_type']}, {secret['secret']}, {secret['validity']}, {secret["publicly_leaked"]}\n"
         )
     logging.info(f"Retrieved {len(secrets_list)} secrets.")
 
