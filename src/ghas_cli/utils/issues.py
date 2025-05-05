@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 
-from typing import List
-import requests
-from . import network
 import time
+from typing import List
+
+import requests
+
+from . import network
 
 
 def create(
