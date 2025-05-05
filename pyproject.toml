@@ -29,6 +29,13 @@ dev = [
     "ruff>=0.11.2"
 ]
 
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend.data]
+data = "templates"
+
 [project.scripts]
 ghas-cli = "cli:main"
 
