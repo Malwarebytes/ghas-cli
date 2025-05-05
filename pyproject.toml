@@ -1,38 +1,37 @@
-[tool.poetry]
+[project]
 name = "ghas-cli"
 version = "1.6.2"
 description = "Command line interface to interact with GitHub Advanced Security."
-authors = ["jboursier <jboursier@malwarebytes.com>"]
+authors = [{name="jboursier", email="jboursier@malwarebytes.com"}]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/Malwarebytes/ghas-cli"
-documentation = "https://github.com/Malwarebytes/ghas-cli/wiki"
-repository = "https://github.com/Malwarebytes/ghas-cli"
 keywords = ["security", "cli", "github", "utility"]
+requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Topic :: Utilities"
 ]
-include = ["src/cli.py"]
+dependencies = [
+    "click>=8.1.8",
+    "configparser>=7.1.0",
+    "python-magic>=0.4.27",
+    "requests>=2.32.3",
+    "urllib3>=2.2.3",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.8,<4"
-click = ">=8"
-requests = "*"
-colorama = "*"
-configparser = "*"
-python-magic = "*"
-urllib3 = ">=1.26.12,<3.0.0"
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.11.2"
+]
 
-[tool.poetry.scripts]
-ghas-cli = 'src.cli:main'
+[project.scripts]
+ghas-cli = "cli:main"
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff.lint]
+# isort
+select = ["I"]
