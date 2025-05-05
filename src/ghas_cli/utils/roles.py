@@ -2,7 +2,9 @@
 #!/usr/bin/env python3
 
 from typing import List
+
 import requests
+
 from . import network
 
 

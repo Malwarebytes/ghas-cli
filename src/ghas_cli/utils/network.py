@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 
-from typing import Any, Dict
-from datetime import datetime
-import time
-import requests
 import logging
+import time
+from datetime import datetime
+from typing import Any, Dict
+
+import requests
 
 # If the rate-limit is reached, sleep X seconds
 SLEEP_1_MINUTE = 60

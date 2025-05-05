@@ -389,7 +389,7 @@ def get_languages(
 ) -> List:
     """Get the main language for a repository"""
 
-    codeql_languages = ["cpp", "csharp", "go", "java", "javascript", "python", "ruby"]
+    codeql_languages = ["cpp", "csharp", "go", "java", "javascript", "python", "ruby", "swift"]
     codeql_aliased_languages = {
         "typescript": "javascript",
         "kotlin": "java",
