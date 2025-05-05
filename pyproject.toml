@@ -5,9 +5,6 @@ description = "Command line interface to interact with GitHub Advanced Security.
 authors = [{name="jboursier", email="jboursier@malwarebytes.com"}]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/Malwarebytes/ghas-cli"
-documentation = "https://github.com/Malwarebytes/ghas-cli/wiki"
-repository = "https://github.com/Malwarebytes/ghas-cli"
 keywords = ["security", "cli", "github", "utility"]
 requires-python = ">=3.8"
 classifiers = [
@@ -15,7 +12,6 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Topic :: Utilities"
@@ -34,11 +30,7 @@ dev = [
 ]
 
 [project.scripts]
-ghas-cli = "src.cli:main"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+ghas-cli = "cli:main"
 
 [tool.ruff.lint]
 # isort
