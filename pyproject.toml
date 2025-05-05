@@ -1,6 +1,6 @@
 [project]
 name = "ghas-cli"
-version = "1.7.0"
+version = "1.7.1"
 description = "Command line interface to interact with GitHub Advanced Security."
 authors = [{name="jboursier", email="jboursier@malwarebytes.com"}]
 license = "MIT"
@@ -23,6 +23,15 @@ dependencies = [
     "requests>=2.32.3",
     "urllib3>=2.2.3",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Malwarebytes/ghas-cli"
+Issues = "https://github.com/Malwarebytes/ghas-cli/issues"
+Documentation = "https://github.com/Malwarebytes/ghas-cli/wiki"
+Repository = "https://github.com/Malwarebytes/ghas-cli"
+Changelog = "https://github.com/Malwarebytes/ghas-cli/releases"
+funding = "https://www.malwarebytes.com/"
+
 
 [project.optional-dependencies]
 dev = [
