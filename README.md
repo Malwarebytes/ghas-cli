@@ -56,7 +56,7 @@ python -m pip install /full/path/to/ghas-cli-xxx.whl
 
 ### Build
 
-[Install Poetry](https://python-poetry.org/docs/#installation) first, then:
+[Install uv](https://docs.astral.sh/uv/getting-started/installation/) first, then:
 
 ```bash
 make dev
@@ -64,7 +64,7 @@ make dev
 
 ### Bump the version number
 
-* Bump the version number: `poetry version x.x.x`
+* Bump the version number: `uv version --bump minor`
 * Update the `__version__` field in `src/cli.py` accordingly.
 
 ### Publish a new version
@@ -72,11 +72,10 @@ make dev
 **Requires `syft` to be installed to generate the sbom.**
 
 1. Bump the version number as described above
-2. `make deps` to update the dependencies
-3. `make release` to build the packages
-4. `git commit -a -S Bump to version 1.1.2` and `git tag -s v1.1.2 -m "1.1.2"`
-5. Upload `dist/*`, `checksums.sha512` and `checksums.sha512.asc` to a new release in GitHub.
-6. Upload to [PyPi](https://pypi.org/project/ghas-cli/): `poetry publish`.
+2. `make release` to build the packages
+3. `git commit -a -S Bump to version 1.1.2` and `git tag -s v1.1.2 -m "1.1.2"`
+4. Upload `dist/*`, `checksums.sha512` and `checksums.sha512.asc` to a new release in GitHub.
+5. Upload to [PyPi](https://pypi.org/project/ghas-cli/): `poetry publish`.
 
 
 ## Why not use `ghas-enablement`?
