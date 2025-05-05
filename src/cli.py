@@ -3,7 +3,7 @@
 
 __author__ = "jboursier"
 __copyright__ = "Copyright 2025, Malwarebytes"
-__version__ = "1.6.2"
+__version__ = "1.7.0"
 __maintainer__ = "jboursier"
 __email__ = "jboursier@malwarebytes.com"
 __status__ = "Production"
