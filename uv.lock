@@ -150,7 +150,7 @@ wheels = [
 [[package]]
 name = "ghas-cli"
 version = "1.6.2"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
     { name = "click" },
     { name = "configparser", version = "7.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
