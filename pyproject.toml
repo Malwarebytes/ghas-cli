@@ -1,6 +1,6 @@
 [project]
 name = "ghas-cli"
-version = "1.7.1"
+version = "1.7.2"
 description = "Command line interface to interact with GitHub Advanced Security."
 authors = [{name="jboursier", email="jboursier@malwarebytes.com"}]
 license = "MIT"
@@ -14,7 +14,16 @@ classifiers = [
     "Intended Audience :: Information Technology",
     "Natural Language :: English",
     "Operating System :: OS Independent",
-    "Topic :: Utilities"
+    "Topic :: Utilities",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "click>=8.1.8",
