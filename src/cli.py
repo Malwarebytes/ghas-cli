@@ -1819,7 +1819,8 @@ def org_attach_configuration(
         )
     
     if success:
-        click.echo(f"Successfully attached configuration {configuration_id} to organization {org}")
+        repo_count = len(processed_repository_names) if processed_repository_names else "all"
+        click.echo(f"Successfully attached configuration {configuration_id} to {repo_count} repositories in organization {org}")
     else:
         click.echo(f"Failed to attach configuration {configuration_id} to organization {org}")
         click.echo("Check the logs for more details.")

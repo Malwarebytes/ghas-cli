@@ -143,8 +143,8 @@ def attach_code_security_configuration(
             json=payload,
         )
         
-        if response.status_code in [200, 201, 204]:
-            logging.info(f"Successfully attached configuration {configuration_id} to organization {org}")
+        if response.status_code in [200, 201, 202, 204]:
+            logging.info(f"Received response {response.status_code} for configuration {configuration_id} from GitHub API")
             return True
             
         if network.check_rate_limit(response):
@@ -155,7 +155,7 @@ def attach_code_security_configuration(
     if response.status_code not in [200, 201, 202, 204]:
         logging.error(f"Failed to attach configuration {configuration_id} to organization {org}: {response.status_code}")
         if response.content:
-            logging.error(f"Response content: {response.text}")
+            logging.error(f"Response: {response.text}")
         return False
     
     return False
