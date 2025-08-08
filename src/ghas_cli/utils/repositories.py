@@ -713,3 +713,43 @@ def get_file_sha(organization, repository, headers, file):
     if file_resp.status_code == 200:
         return file_resp.json()["sha"]
     return None
+
+
+def get_repository_details(organization: str, token: str, repository_name: str) -> dict:
+    """
+    Get repository details including ID by repository name.
+    
+    Args:
+        organization: The organization name
+        token: GitHub API token
+        repository_name: The repository name
+        
+    Returns:
+        Dictionary containing repository details including 'id', 'name', 'full_name', etc.
+        Returns None if repository not found or error occurred
+    """
+    headers = network.get_github_headers(token)
+    
+    i = 0
+    while i < network.RETRIES:
+        response = network.get(
+            url=f"https://api.github.com/repos/{organization}/{repository_name}",
+            headers=headers,
+        )
+
+        if response.status_code == 200:
+            return response.json()
+            
+        if network.check_rate_limit(response):
+            time.sleep(network.SLEEP_1_MINUTE)
+            
+        i += 1
+    
+    if response.status_code == 404:
+        logging.error(f"Repository '{repository_name}' not found in organization '{organization}'")
+    else:
+        logging.error(f"Failed to get repository details for '{repository_name}': {response.status_code}")
+        if response.content:
+            logging.error(f"Response content: {response.text}")
+    
+    return None

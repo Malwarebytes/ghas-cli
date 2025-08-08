@@ -1658,5 +1658,172 @@ def org_get_security_configurations(
             click.echo("-" * 40)
 
 
+@org_cli.command("attach_configuration")
+@click.option(
+    "-o",
+    "--org",
+    prompt="Organization name",
+    type=str,
+)
+@click.option(
+    "-c",
+    "--configuration-id",
+    type=str,
+    required=True,
+    help="Configuration ID to attach",
+)
+@click.option(
+    "-s",
+    "--scope",
+    prompt="Scope",
+    type=click.Choice(["selected", "all"], case_sensitive=False),
+    default="selected",
+)
+@click.option(
+    "-r",
+    "--repository-ids",
+    type=str,
+    help="Comma-separated list of repository IDs (required if scope is 'selected' and no file provided)",
+)
+@click.option(
+    "-rl",
+    "--repo-list-file",
+    type=click.File("r"),
+    help="File containing repository names, one per line (required if scope is 'selected' and no repository-ids provided)",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option(
+    "-y",
+    "--yes",
+    is_flag=True,
+    help="Skip confirmation prompt",
+)
+def org_attach_configuration(
+    org: str,
+    configuration_id: str,
+    scope: str,
+    repository_ids: str,
+    repo_list_file: Any,
+    token: str,
+    yes: bool,
+) -> None:
+    """Attach a code security configuration to repositories in an organization"""
+    
+    # Get configuration details for confirmation
+    config_details = organization.get_code_security_configuration_details(org, configuration_id, token)
+    if not config_details:
+        click.echo(f"Error: Configuration {configuration_id} not found in organization {org}")
+        return
+    
+    # Determine input type and validate parameters
+    using_file = repo_list_file is not None
+    using_repository_ids = repository_ids is not None
+    
+    if scope == "selected":
+        if not using_file and not using_repository_ids:
+            click.echo("Error: Either --repository-ids or --repo-list-file must be provided when scope is 'selected'")
+            return
+        if using_file and using_repository_ids:
+            click.echo("Error: Cannot use both --repository-ids and --repo-list-file. Choose one.")
+            return
+    
+    # Display confirmation
+    click.echo(f"\nSelected Configuration:")
+    click.echo(f"  ID: {config_details.get('id', 'N/A')}")
+    click.echo(f"  Name: {config_details.get('name', 'N/A')}")
+    click.echo(f"  Description: {config_details.get('description', 'N/A')}")
+    click.echo(f"  Enabled: {config_details.get('enabled', 'N/A')}")
+    click.echo(f"  Scope: {scope}")
+    
+    success = False
+    
+    if scope == "all":
+        click.echo(f"  Target: All repositories in the organization")
+        
+        if not yes:
+            if not click.confirm(f"\nDo you want to attach this configuration to all repositories?"):
+                click.echo("Operation cancelled.")
+                return
+        
+        success = organization.attach_code_security_configuration(
+            org=org,
+            configuration_id=configuration_id,
+            scope=scope,
+            selected_repository_ids=[],
+            token=token,
+        )
+    
+    elif using_repository_ids:
+        # Parse repository IDs
+        try:
+            selected_repository_ids = [int(rid.strip()) for rid in repository_ids.split(",")]
+        except ValueError:
+            click.echo("Error: Repository IDs must be comma-separated integers")
+            return
+        
+        click.echo(f"  Repository IDs: {', '.join(map(str, selected_repository_ids))}")
+        
+        if not yes:
+            if not click.confirm(f"\nDo you want to attach this configuration to the specified repositories?"):
+                click.echo("Operation cancelled.")
+                return
+        
+        success = organization.attach_code_security_configuration(
+            org=org,
+            configuration_id=configuration_id,
+            scope=scope,
+            selected_repository_ids=selected_repository_ids,
+            token=token,
+        )
+    
+    elif using_file:
+        repository_names = []
+        for line in repo_list_file:
+            repo_name = line.strip()
+            if repo_name and not repo_name.startswith('#'): 
+                repository_names.append(repo_name)
+        
+        if not repository_names:
+            click.echo("Error: No repository names found in the input file")
+            return
+        
+        click.echo(f"  Target Repositories ({len(repository_names)}):")
+        for repo_name in repository_names:
+            click.echo(f"    - {repo_name}")
+        
+        processed_repository_names = []
+        for repo_name in repository_names:
+            clean_repo_name = repo_name.split('/')[-1] if '/' in repo_name else repo_name
+            processed_repository_names.append(clean_repo_name)
+        
+        if not yes:
+            if not click.confirm(f"\nDo you want to attach this configuration to the listed repositories?"):
+                click.echo("Operation cancelled.")
+                return
+        
+        success = organization.attach_code_security_configuration_by_repository_names(
+            org=org,
+            configuration_id=configuration_id,
+            scope=scope,
+            repository_names=processed_repository_names,
+            token=token,
+        )
+    
+    if success:
+        click.echo(f"Successfully attached configuration {configuration_id} to organization {org}")
+    else:
+        click.echo(f"Failed to attach configuration {configuration_id} to organization {org}")
+        click.echo("Check the logs for more details.")
+
+
 if __name__ == "__main__":
     main()
