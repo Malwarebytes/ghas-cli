@@ -26,7 +26,7 @@ except ImportError:
 from ghas_cli.utils import (
     actions,
     dependabot,
-    enterprise,
+    organization,
     issues,
     repositories,
     roles,
@@ -1595,21 +1595,21 @@ def mass_get_dependencies(
 
 
 ##########
-# Enterprise #
+# Organization #
 ##########
 
 
-@cli.group(name="enterprise")
-def enterprise_cli() -> None:
-    """Manage enterprise-level operations"""
+@cli.group(name="org")
+def org_cli() -> None:
+    """Manage organization-level operations"""
     pass
 
 
-@enterprise_cli.command("get_configurations")
+@org_cli.command("get_configurations")
 @click.option(
-    "-e",
-    "--enterprise-slug",
-    prompt="Enterprise slug or enterprise id",
+    "-o",
+    "--org",
+    prompt="Organization name",
     type=str,
 )
 @click.option(
@@ -1632,14 +1632,14 @@ def enterprise_cli() -> None:
     confirmation_prompt=False,
     show_envvar=True,
 )
-def enterprise_get_security_configurations(
-    enterprise_slug: str,
+def org_get_security_configurations(
+    org: str,
     format: str,
     token: str,
 ) -> None:
-    """Get the list of code security configurations enabled in an enterprise"""
+    """Get the list of code security configurations enabled in an organization"""
     
-    configurations = enterprise.get_code_security_configurations(enterprise_slug, token)
+    configurations = organization.get_code_security_configurations(org, token)
     
     if not configurations:
         click.echo("No code security configurations found or failed to retrieve.")
@@ -1648,7 +1648,7 @@ def enterprise_get_security_configurations(
     if format == "json":
         click.echo(json.dumps(configurations, indent=2))
     else:
-        click.echo(f"Code Security Configurations for Enterprise '{enterprise_slug}':")
+        click.echo(f"Code Security Configurations for Organization '{org}':")
         click.echo("=" * 60)
         for config in configurations:
             click.echo(f"Configuration ID: {config.get('id', 'N/A')}")

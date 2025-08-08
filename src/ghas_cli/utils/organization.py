@@ -8,12 +8,13 @@ from typing import Any, Dict, List
 from . import network
 
 
-def get_code_security_configurations(enterprise: str, token: str) -> List[Dict]:
+
+def get_code_security_configurations(org: str, token: str) -> List[Dict]:
     """
-    Get the list of code security configurations enabled in an enterprise.
+    Get the list of code security configurations enabled in an organization.
     
     Args:
-        enterprise: The enterprise slug
+        org: The organization name
         token: GitHub API token
         
     Returns:
@@ -24,7 +25,7 @@ def get_code_security_configurations(enterprise: str, token: str) -> List[Dict]:
     i = 0
     while i < network.RETRIES:
         response = network.get(
-            url=f"https://api.github.com/enterprises/{enterprise}/code-security/configurations",
+            url=f"https://api.github.com/orgs/{org}/code-security/configurations",
             headers=headers,
         )
         
@@ -37,7 +38,7 @@ def get_code_security_configurations(enterprise: str, token: str) -> List[Dict]:
         i += 1
     
     if response.status_code != 200:
-        logging.error(f"Failed to get code security configurations: {response.status_code}")
+        logging.error(f"Failed to get organization code security configurations: {response.status_code}")
         return []
     
     return []
