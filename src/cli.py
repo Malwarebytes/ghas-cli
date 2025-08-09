@@ -1027,6 +1027,16 @@ def actions_set_permissions(
     default=3,
 )
 @click.option(
+    "-fs",
+    "--filter-status",
+    type=click.Choice(
+        ["completed", "action_required", "cancelled", "failure", "neutral", "skipped", "stale", "success", "timed_out", "in_progress", "queued", "requested", "waiting", "pending"],
+        case_sensitive=False,
+    ),
+    default=None,
+    help="Filter by workflow run status (optional)",
+)
+@click.option(
     "-f",
     "--format",
     prompt="Output format",
@@ -1050,6 +1060,7 @@ def actions_set_permissions(
 def actions_get_ghas_runs(
     repository: str,
     days: int,
+    filter_status: str,
     format: str,
     organization: str,
     token: str,
@@ -1063,21 +1074,22 @@ def actions_get_ghas_runs(
         organization=organization,
         repository_name=clean_repo_name,
         days=days,
+        status=filter_status,
     )
     
     if format == "json":
         import json
         click.echo(json.dumps(runs, indent=2))
     else:
+        status_info = f" with status '{filter_status}'" if filter_status else ""
         if not runs:
-            click.echo(f"No GHAS-related workflow runs found in the last {days} days for {organization}/{clean_repo_name}")
+            click.echo(f"No GHAS-related workflow runs found in the last {days} days for {organization}/{clean_repo_name}{status_info}")
         else:
-            click.echo(f"GHAS Workflow Runs for {organization}/{clean_repo_name} (last {days} days):")
+            click.echo(f"GHAS Workflow Runs for {organization}/{clean_repo_name} (last {days} days{status_info}):")
             click.echo("=" * 60)
             for run in runs:
                 click.echo(f"Run ID: {run.get('id', 'N/A')}")
                 click.echo(f"Name: {run.get('name', 'N/A')}")
-                click.echo(f"Status: {run.get('status', 'N/A')}")
                 click.echo(f"Conclusion: {run.get('conclusion', 'N/A')}")
                 click.echo(f"Created: {run.get('created_at', 'N/A')}")
                 click.echo(f"Author: {run.get('head_commit', {}).get('author', {}).get('name', 'N/A')}")

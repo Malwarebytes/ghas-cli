@@ -42,20 +42,39 @@ def set_permissions(
     else:
         return True
 
-def get_ghas_workflow_runs(token: str, organization: str, repository_name: str, days: int = 3) -> list:
-    """Get GHAS-related workflow runs for a repository filtered by days (default: last 3 days)"""
+def get_ghas_workflow_runs(token: str, organization: str, repository_name: str, days: int = 3, status: str = None) -> list:
+    """Get GHAS-related workflow runs for a repository filtered by days (default: last 3 days)
+    
+    Args:
+        token: GitHub API token
+        organization: Organization name
+        repository_name: Repository name
+        days: Number of days to look back (default: 3)
+        status: Filter by workflow run status (completed, action_required, cancelled, failure, 
+               neutral, skipped, stale, success, timed_out, in_progress, queued, requested, waiting, pending)
+    
+    Returns:
+        List of GHAS-related workflow runs
+    """
     headers = network.get_github_headers(token)
     
     cutoff_date = datetime.now() - timedelta(days=days)
     cutoff_date_str = cutoff_date.strftime('%Y-%m-%d')
 
+    # Build query parameters
+    params = {
+        'created': f'>={cutoff_date_str}',
+        'per_page': 100
+    }
+    
+    # Add status filter if specified
+    if status:
+        params['status'] = status
+
     response = requests.get(
         url=f"https://api.github.com/repos/{organization}/{repository_name}/actions/runs",
         headers=headers,
-        params={
-            'created': f'>={cutoff_date_str}',
-            'per_page': 100
-        }
+        params=params
     )
 
     runs = response.json()
