@@ -73,7 +73,6 @@ def attach_code_security_configuration_by_repository_names(
         logging.error("Repository names are required when scope is 'selected'")
         return False
     
-    # Get repository IDs from names
     selected_repository_ids = []
     failed_repositories = []
     
@@ -95,7 +94,6 @@ def attach_code_security_configuration_by_repository_names(
         if not selected_repository_ids:
             return False
     
-    # Proceed with attachment
     return attach_code_security_configuration(
         org=org,
         configuration_id=configuration_id,
@@ -127,7 +125,6 @@ def attach_code_security_configuration(
     """
     headers = network.get_github_headers(token)
     
-    # Prepare the request payload
     payload = {
         "scope": scope
     }

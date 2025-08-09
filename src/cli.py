@@ -1012,6 +1012,80 @@ def actions_set_permissions(
     click.echo(permissions)
 
 
+@actions_cli.command("get_ghas_runs")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+    type=str,
+)
+@click.option(
+    "-d",
+    "--days",
+    prompt="Number of days to look back",
+    type=int,
+    default=3,
+)
+@click.option(
+    "-f",
+    "--format",
+    prompt="Output format",
+    type=click.Choice(
+        ["human", "json"],
+        case_sensitive=False,
+    ),
+    default="human",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+def actions_get_ghas_runs(
+    repository: str,
+    days: int,
+    format: str,
+    organization: str,
+    token: str,
+) -> None:
+    """Get GHAS-related workflow runs for a repository (default: last 3 days)"""
+    
+    clean_repo_name = repository.split('/')[-1] if '/' in repository else repository
+    
+    runs = actions.get_ghas_workflow_runs(
+        token=token,
+        organization=organization,
+        repository_name=clean_repo_name,
+        days=days,
+    )
+    
+    if format == "json":
+        import json
+        click.echo(json.dumps(runs, indent=2))
+    else:
+        if not runs:
+            click.echo(f"No GHAS-related workflow runs found in the last {days} days for {organization}/{clean_repo_name}")
+        else:
+            click.echo(f"GHAS Workflow Runs for {organization}/{clean_repo_name} (last {days} days):")
+            click.echo("=" * 60)
+            for run in runs:
+                click.echo(f"Run ID: {run.get('id', 'N/A')}")
+                click.echo(f"Name: {run.get('name', 'N/A')}")
+                click.echo(f"Status: {run.get('status', 'N/A')}")
+                click.echo(f"Conclusion: {run.get('conclusion', 'N/A')}")
+                click.echo(f"Created: {run.get('created_at', 'N/A')}")
+                click.echo(f"Author: {run.get('head_commit', {}).get('author', {}).get('name', 'N/A')}")
+                click.echo(f"Actor: {run.get('actor', {}).get('login', 'N/A')}")
+                click.echo(f"URL: {run.get('html_url', 'N/A')}")
+                click.echo("-" * 40)
+
+
 ###############
 # Roles #
 ###############
