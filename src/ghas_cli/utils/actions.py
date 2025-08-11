@@ -90,7 +90,9 @@ def get_ghas_workflow_runs(token: str, organization: str, repository_name: str, 
             
             if run.get("actor", {}).get("login") in GHAS_RELATED_RUNS["actor"]:
                 is_ghas_related = True
-            elif run.get("head_commit", {}).get("author", {}).get("name") in GHAS_RELATED_RUNS["actor"]:
+            if run.get("head_commit", {}).get("author", {}).get("name") in GHAS_RELATED_RUNS["actor"]:
+                is_ghas_related = True
+            if run.get("path") in GHAS_RELATED_RUNS["path"]:
                 is_ghas_related = True
             
             if is_ghas_related:

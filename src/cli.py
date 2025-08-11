@@ -110,6 +110,73 @@ def vulns_alerts_list(repos: str, organization: str, status: str, token: str) ->
     return repositories_alerts
 
 
+@vuln_alerts.command("list_analyses")
+@click.option(
+    "-r",
+    "--repository",
+    prompt="Repository name",
+    type=str,
+)
+@click.option(
+    "-f",
+    "--format",
+    prompt="Output format",
+    type=click.Choice(
+        ["human", "json"],
+        case_sensitive=False,
+    ),
+    default="human",
+)
+@click.option("-o", "--organization", prompt="Organization name", type=str)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+def vulns_analyses_list(repository: str, format: str, organization: str, token: str) -> Dict:
+    """Get CodeQL analyses for a single repository, grouped by commit SHA"""
+
+    # Remove organization name from repository name if user supplied it
+    clean_repo_name = repository.split('/')[-1] if '/' in repository else repository
+
+    analyses_by_commit = vulns.get_codeql_analyses_repo(
+        clean_repo_name, organization, token
+    )
+    
+    if format == "json":
+        import json
+        click.echo(json.dumps(analyses_by_commit, indent=2))
+    else:
+        click.echo(f"\nCodeQL Analyses for {organization}/{clean_repo_name}:")
+        click.echo("=" * 60)
+        
+        if not analyses_by_commit:
+            click.echo("No analyses found.")
+        else:
+            for commit_sha, analyses in analyses_by_commit.items():
+                click.echo(f"\nCommit: {commit_sha}")
+                click.echo("-" * 40)
+                
+                for analysis in analyses:
+                    click.echo(f"  Analysis ID: {analysis.get('id', 'N/A')}")
+                    click.echo(f"  Tool: {analysis.get('tool', 'N/A')}")
+                    click.echo(f"  Created: {analysis.get('created_at', 'N/A')}")
+                    click.echo(f"  Results Count: {analysis.get('results_count', 'N/A')}")
+                    click.echo(f"  Rules Count: {analysis.get('rules_count', 'N/A')}")
+                    click.echo(f"  Category: {analysis.get('category', 'N/A')}")
+                    click.echo(f"  Environment: {analysis.get('environment', 'N/A')}")
+                    click.echo(f"  Warning: {analysis.get('warning', 'N/A')}")
+                    click.echo(f"  Error: {analysis.get('error', 'N/A')}")
+                    click.echo()
+    
+    return analyses_by_commit
+
+
 ################
 # Repositories #
 ################
