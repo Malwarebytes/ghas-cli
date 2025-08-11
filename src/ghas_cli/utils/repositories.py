@@ -10,6 +10,11 @@ from typing import Any, List
 
 from . import network
 
+def clean_repo_name(repository: str) -> str:
+    """
+    Clean the repository name by removing the organization name if it exists.
+    """
+    return repository.split('/')[-1] if '/' in repository else repository
 
 class Repository:
     def __init__(

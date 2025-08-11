@@ -131,5 +131,9 @@ dmypy.json
 ghas-cli-complete.sh
 checksums.sha512
 checksums.sha512.asc
+
+ghas-output/
+mass_attach.sh
+mass_check.sh
 repo_list.txt
 test.sh

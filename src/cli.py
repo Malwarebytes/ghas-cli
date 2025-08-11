@@ -141,17 +141,7 @@ def vulns_alerts_list(repos: str, organization: str, status: str, token: str) ->
 def vulns_analyses_list(repository: str, format: str, organization: str, token: str) -> Dict:
     """Get CodeQL analyses for a single repository, grouped by commit SHA"""
 
-    # Remove organization name from repository name if user supplied it
-    clean_repo_name = repository.split('/')[-1] if '/' in repository else repository
-
-    analyses_by_commit = vulns.get_codeql_analyses_repo(
-        clean_repo_name, organization, token
-    )
-    
-    if format == "json":
-        import json
-        click.echo(json.dumps(analyses_by_commit, indent=2))
-    else:
+    def print_human(analyses):
         click.echo(f"\nCodeQL Analyses for {organization}/{clean_repo_name}:")
         click.echo("=" * 60)
         
@@ -163,16 +153,30 @@ def vulns_analyses_list(repository: str, format: str, organization: str, token: 
                 click.echo("-" * 40)
                 
                 for analysis in analyses:
-                    click.echo(f"  Analysis ID: {analysis.get('id', 'N/A')}")
-                    click.echo(f"  Tool: {analysis.get('tool', 'N/A')}")
-                    click.echo(f"  Created: {analysis.get('created_at', 'N/A')}")
-                    click.echo(f"  Results Count: {analysis.get('results_count', 'N/A')}")
-                    click.echo(f"  Rules Count: {analysis.get('rules_count', 'N/A')}")
-                    click.echo(f"  Category: {analysis.get('category', 'N/A')}")
-                    click.echo(f"  Environment: {analysis.get('environment', 'N/A')}")
-                    click.echo(f"  Warning: {analysis.get('warning', 'N/A')}")
-                    click.echo(f"  Error: {analysis.get('error', 'N/A')}")
+                    click.echo(f"  Analysis ID: {analysis.get('id') or 'N/A'}")
+                    click.echo(f"  Tool: {analysis.get('tool') or 'N/A'}")
+                    click.echo(f"  Created: {analysis.get('created_at') or 'N/A'}")
+                    click.echo(f"  Results Count: {analysis.get('results_count') or 'N/A'}")
+                    click.echo(f"  Rules Count: {analysis.get('rules_count') or 'N/A'}")
+                    click.echo(f"  Category: {analysis.get('category') or 'N/A'}")
+                    click.echo(f"  Environment: {analysis.get('environment') or 'N/A'}")
+                    click.echo(f"  Warning: {analysis.get('warning') or 'N/A'}")
+                    click.echo(f"  Error: {analysis.get('error') or 'N/A'}")
                     click.echo()
+
+
+    clean_repo_name = repositories.clean_repo_name(repository)
+
+    analyses_by_commit = vulns.get_codeql_analyses_repo(
+        clean_repo_name, organization, token
+    )
+    
+    if format == "json":
+        import json
+        click.echo(json.dumps(analyses_by_commit, indent=2))
+    else:
+        print_human(analyses_by_commit)
+        
     
     return analyses_by_commit
 
@@ -1133,9 +1137,26 @@ def actions_get_ghas_runs(
     token: str,
 ) -> None:
     """Get GHAS-related workflow runs for a repository (default: last 3 days)"""
+
+    def print_human(runs):
+        status_info = f" with status '{filter_status}'" if filter_status else ""
+        if not runs:
+            click.echo(f"No GHAS-related workflow runs found in the last {days} days for {organization}/{clean_repo_name}{status_info}")
+        else:
+            click.echo(f"GHAS Workflow Runs for {organization}/{clean_repo_name} (last {days} days{status_info}):")
+            click.echo("=" * 60)
+            for run in runs:
+                click.echo(f"Run ID: {run.get('id') or 'N/A'}")
+                click.echo(f"Name: {run.get('name') or 'N/A'}")
+                click.echo(f"Conclusion: {run.get('conclusion') or 'N/A'}")
+                click.echo(f"Created: {run.get('created_at') or 'N/A'}")
+                click.echo(f"Author: {run.get('head_commit', {}).get('author', {}).get('name') or 'N/A'}")
+                click.echo(f"Actor: {run.get('actor', {}).get('login') or 'N/A'}")
+                click.echo(f"URL: {run.get('html_url') or 'N/A'}")
+                click.echo("-" * 40)
     
-    clean_repo_name = repository.split('/')[-1] if '/' in repository else repository
-    
+    clean_repo_name = repositories.clean_repo_name(repository)
+
     runs = actions.get_ghas_workflow_runs(
         token=token,
         organization=organization,
@@ -1148,21 +1169,7 @@ def actions_get_ghas_runs(
         import json
         click.echo(json.dumps(runs, indent=2))
     else:
-        status_info = f" with status '{filter_status}'" if filter_status else ""
-        if not runs:
-            click.echo(f"No GHAS-related workflow runs found in the last {days} days for {organization}/{clean_repo_name}{status_info}")
-        else:
-            click.echo(f"GHAS Workflow Runs for {organization}/{clean_repo_name} (last {days} days{status_info}):")
-            click.echo("=" * 60)
-            for run in runs:
-                click.echo(f"Run ID: {run.get('id', 'N/A')}")
-                click.echo(f"Name: {run.get('name', 'N/A')}")
-                click.echo(f"Conclusion: {run.get('conclusion', 'N/A')}")
-                click.echo(f"Created: {run.get('created_at', 'N/A')}")
-                click.echo(f"Author: {run.get('head_commit', {}).get('author', {}).get('name', 'N/A')}")
-                click.echo(f"Actor: {run.get('actor', {}).get('login', 'N/A')}")
-                click.echo(f"URL: {run.get('html_url', 'N/A')}")
-                click.echo("-" * 40)
+        print_human(runs)
 
 
 ###############
@@ -1791,6 +1798,16 @@ def org_get_security_configurations(
     token: str,
 ) -> None:
     """Get the list of code security configurations enabled in an organization"""
+
+    def print_human(configurations):
+        click.echo(f"Code Security Configurations for Organization '{org}':")
+        click.echo("=" * 60)
+        for config in configurations:
+            click.echo(f"Configuration ID: {config.get('id') or 'N/A'}")
+            click.echo(f"Name: {config.get('name') or 'N/A'}")
+            click.echo(f"Description: {config.get('description') or 'N/A'}")
+            click.echo(f"Enabled: {config.get('enabled') or 'N/A'}")
+            click.echo("-" * 40)
     
     configurations = organization.get_code_security_configurations(org, token)
     
@@ -1801,14 +1818,7 @@ def org_get_security_configurations(
     if format == "json":
         click.echo(json.dumps(configurations, indent=2))
     else:
-        click.echo(f"Code Security Configurations for Organization '{org}':")
-        click.echo("=" * 60)
-        for config in configurations:
-            click.echo(f"Configuration ID: {config.get('id', 'N/A')}")
-            click.echo(f"Name: {config.get('name', 'N/A')}")
-            click.echo(f"Description: {config.get('description', 'N/A')}")
-            click.echo(f"Enabled: {config.get('enabled', 'N/A')}")
-            click.echo("-" * 40)
+        print_human(configurations)
 
 
 @org_cli.command("attach_configuration")
@@ -1871,13 +1881,11 @@ def org_attach_configuration(
 ) -> None:
     """Attach a code security configuration to repositories in an organization"""
     
-    # Get configuration details for confirmation
     config_details = organization.get_code_security_configuration_details(org, configuration_id, token)
     if not config_details:
         click.echo(f"Error: Configuration {configuration_id} not found in organization {org}")
         return
     
-    # Determine input type and validate parameters
     using_file = repo_list_file is not None
     using_repository_ids = repository_ids is not None
     
@@ -1889,7 +1897,6 @@ def org_attach_configuration(
             click.echo("Error: Cannot use both --repository-ids and --repo-list-file. Choose one.")
             return
     
-    # Display confirmation
     click.echo(f"\nSelected Configuration:")
     click.echo(f"  ID: {config_details.get('id', 'N/A')}")
     click.echo(f"  Name: {config_details.get('name', 'N/A')}")
