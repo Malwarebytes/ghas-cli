@@ -1905,6 +1905,9 @@ def org_attach_configuration(
     click.echo(f"  Scope: {scope}")
     
     success = False
+    successful_count = 0
+    failed_count = 0
+    failed_repositories = []
     
     if scope == "all":
         click.echo(f"  Target: All repositories in the organization")
@@ -1944,6 +1947,7 @@ def org_attach_configuration(
             selected_repository_ids=selected_repository_ids,
             token=token,
         )
+        successful_count = len(selected_repository_ids) if success else 0
     
     elif using_file:
         repository_names = []
@@ -1970,19 +1974,169 @@ def org_attach_configuration(
                 click.echo("Operation cancelled.")
                 return
         
-        success = organization.attach_code_security_configuration_by_repository_names(
+        result = organization.attach_code_security_configuration_by_repository_names(
             org=org,
             configuration_id=configuration_id,
             scope=scope,
             repository_names=processed_repository_names,
             token=token,
         )
+        
+        success = result["success"]
+        successful_count = result["successful_count"]
+        failed_count = result["failed_count"]
+        failed_repositories = result["failed_repositories"]
     
     if success:
-        repo_count = len(processed_repository_names) if processed_repository_names else "all"
-        click.echo(f"Successfully attached configuration {configuration_id} to {repo_count} repositories in organization {org}")
+        if scope == "all":
+            click.echo(f"Successfully attached configuration {configuration_id} to all repositories in organization {org}")
+        else:
+            if failed_count > 0:
+                click.echo(f"Successfully attached configuration {configuration_id} to {successful_count} repositories in organization {org}")
+                click.echo(f"Failed to attach to {failed_count} repositories: {', '.join(failed_repositories)}")
+            else:
+                click.echo(f"Successfully attached configuration {configuration_id} to {successful_count} repositories in organization {org}")
     else:
-        click.echo(f"Failed to attach configuration {configuration_id} to organization {org}")
+        if failed_count > 0:
+            click.echo(f"Failed to attach configuration {configuration_id} to organization {org}")
+            click.echo(f"Failed to process {failed_count} repositories: {', '.join(failed_repositories)}")
+        else:
+            click.echo(f"Failed to attach configuration {configuration_id} to organization {org}")
+        click.echo("Check the logs for more details.")
+
+
+@org_cli.command("detach_configuration")
+@click.option(
+    "-o",
+    "--org",
+    prompt="Organization name",
+    type=str,
+)
+@click.option(
+    "-r",
+    "--repository-ids",
+    type=str,
+    help="Comma-separated list of repository IDs to detach from (required if no file provided)",
+)
+@click.option(
+    "-rl",
+    "--repo-list-file",
+    type=click.File("r"),
+    help="File containing repository names, one per line (required if no repository-ids provided)",
+)
+@click.option(
+    "-t",
+    "--token",
+    prompt=False,
+    type=str,
+    default=None,
+    hide_input=True,
+    confirmation_prompt=False,
+    show_envvar=True,
+)
+@click.option(
+    "-y",
+    "--yes",
+    is_flag=True,
+    help="Skip confirmation prompt",
+)
+def org_detach_configuration(
+    org: str,
+    repository_ids: str,
+    repo_list_file: Any,
+    token: str,
+    yes: bool,
+) -> None:
+    """Detach code security configurations from repositories in an organization"""
+    
+    using_file = repo_list_file is not None
+    using_repository_ids = repository_ids is not None
+    
+    if not using_file and not using_repository_ids:
+        click.echo("Error: Either --repository-ids or --repo-list-file must be provided")
+        return
+    if using_file and using_repository_ids:
+        click.echo("Error: Cannot use both --repository-ids and --repo-list-file. Choose one.")
+        return
+    
+    success = False
+    successful_count = 0
+    failed_count = 0
+    failed_repositories = []
+    
+    if using_repository_ids:
+        try:
+            selected_repository_ids = [int(rid.strip()) for rid in repository_ids.split(",")]
+        except ValueError:
+            click.echo("Error: Repository IDs must be comma-separated integers")
+            return
+        
+        click.echo(f"\nDetach Operation:")
+        click.echo(f"  Organization: {org}")
+        click.echo(f"  Repository IDs: {', '.join(map(str, selected_repository_ids))}")
+        
+        if not yes:
+            if not click.confirm(f"\nDo you want to detach all code security configurations from the specified repositories?"):
+                click.echo("Operation cancelled.")
+                return
+        
+        success = organization.detach_code_security_configuration(
+            org=org,
+            selected_repository_ids=selected_repository_ids,
+            token=token,
+        )
+        successful_count = len(selected_repository_ids) if success else 0
+    
+    elif using_file:
+        repository_names = []
+        for line in repo_list_file:
+            repo_name = line.strip()
+            if repo_name and not repo_name.startswith('#'): 
+                repository_names.append(repo_name)
+        
+        if not repository_names:
+            click.echo("Error: No repository names found in the input file")
+            return
+        
+        click.echo(f"\nDetach Operation:")
+        click.echo(f"  Organization: {org}")
+        click.echo(f"  Target Repositories ({len(repository_names)}):")
+        for repo_name in repository_names:
+            click.echo(f"    - {repo_name}")
+        
+        processed_repository_names = []
+        for repo_name in repository_names:
+            clean_repo_name = repo_name.split('/')[-1] if '/' in repo_name else repo_name
+            processed_repository_names.append(clean_repo_name)
+        
+        if not yes:
+            if not click.confirm(f"\nDo you want to detach all code security configurations from the listed repositories?"):
+                click.echo("Operation cancelled.")
+                return
+        
+        result = organization.detach_code_security_configuration_by_repository_names(
+            org=org,
+            repository_names=processed_repository_names,
+            token=token,
+        )
+        
+        success = result["success"]
+        successful_count = result["successful_count"]
+        failed_count = result["failed_count"]
+        failed_repositories = result["failed_repositories"]
+    
+    if success:
+        if failed_count > 0:
+            click.echo(f"Successfully detached code security configurations from {successful_count} repositories in organization {org}")
+            click.echo(f"Failed to process {failed_count} repositories: {', '.join(failed_repositories)}")
+        else:
+            click.echo(f"Successfully detached code security configurations from {successful_count} repositories in organization {org}")
+    else:
+        if failed_count > 0:
+            click.echo(f"Failed to detach code security configurations from organization {org}")
+            click.echo(f"Failed to process {failed_count} repositories: {', '.join(failed_repositories)}")
+        else:
+            click.echo(f"Failed to detach code security configurations from organization {org}")
         click.echo("Check the logs for more details.")
 
 

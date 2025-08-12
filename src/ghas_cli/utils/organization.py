@@ -53,7 +53,7 @@ def attach_code_security_configuration_by_repository_names(
     scope: str,
     repository_names: List[str],
     token: str
-) -> bool:
+) -> dict:
     """
     Attach a code security configuration to repositories by their names.
     
@@ -65,13 +65,22 @@ def attach_code_security_configuration_by_repository_names(
         token: GitHub API token
         
     Returns:
-        True if successful, False otherwise
+        Dictionary with keys:
+        - success: bool - Overall success status
+        - successful_count: int - Number of repositories successfully attached
+        - failed_count: int - Number of repositories that failed
+        - failed_repositories: List[str] - List of repository names that failed
     """
     from . import repositories
     
     if scope == "selected" and not repository_names:
         logging.error("Repository names are required when scope is 'selected'")
-        return False
+        return {
+            "success": False,
+            "successful_count": 0,
+            "failed_count": 0,
+            "failed_repositories": []
+        }
     
     selected_repository_ids = []
     failed_repositories = []
@@ -92,15 +101,27 @@ def attach_code_security_configuration_by_repository_names(
     if failed_repositories:
         logging.error(f"Failed to get details for repositories: {', '.join(failed_repositories)}")
         if not selected_repository_ids:
-            return False
+            return {
+                "success": False,
+                "successful_count": 0,
+                "failed_count": len(failed_repositories),
+                "failed_repositories": failed_repositories
+            }
     
-    return attach_code_security_configuration(
+    attach_success = attach_code_security_configuration(
         org=org,
         configuration_id=configuration_id,
         scope=scope,
         selected_repository_ids=selected_repository_ids,
         token=token
     )
+    
+    return {
+        "success": attach_success,
+        "successful_count": len(selected_repository_ids),
+        "failed_count": len(failed_repositories),
+        "failed_repositories": failed_repositories
+    }
 
 
 def attach_code_security_configuration(
@@ -156,6 +177,125 @@ def attach_code_security_configuration(
         return False
     
     return False
+
+
+def detach_code_security_configuration(
+    org: str,
+    selected_repository_ids: List[int],
+    token: str
+) -> bool:
+    """
+    Detach code security configurations from repositories in an organization.
+    
+    Args:
+        org: The organization name
+        selected_repository_ids: List of repository IDs to detach from
+        token: GitHub API token
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    headers = network.get_github_headers(token)
+    
+    payload = {
+        "selected_repository_ids": selected_repository_ids
+    }
+    
+    i = 0
+    while i < network.RETRIES:
+        response = network.delete(
+            url=f"https://api.github.com/orgs/{org}/code-security/configurations/detach",
+            headers=headers,
+            json=payload,
+        )
+        
+        if response.status_code in [200, 201, 202, 204]:
+            logging.info(f"Received response {response.status_code} for detach operation from GitHub API")
+            return True
+            
+        if network.check_rate_limit(response):
+            time.sleep(network.SLEEP_1_MINUTE)
+            
+        i += 1
+    
+    if response.status_code not in [200, 201, 202, 204]:
+        logging.error(f"Failed to detach configurations from organization {org}: {response.status_code}")
+        if response.content:
+            logging.error(f"Response: {response.text}")
+        return False
+    
+    return False
+
+
+def detach_code_security_configuration_by_repository_names(
+    org: str,
+    repository_names: List[str],
+    token: str
+) -> dict:
+    """
+    Detach code security configurations from repositories by their names.
+    
+    Args:
+        org: The organization name
+        repository_names: List of repository names to detach from
+        token: GitHub API token
+        
+    Returns:
+        Dictionary with keys:
+        - success: bool - Overall success status
+        - successful_count: int - Number of repositories successfully detached
+        - failed_count: int - Number of repositories that failed
+        - failed_repositories: List[str] - List of repository names that failed
+    """
+    from . import repositories
+    
+    if not repository_names:
+        logging.error("Repository names are required")
+        return {
+            "success": False,
+            "successful_count": 0,
+            "failed_count": 0,
+            "failed_repositories": []
+        }
+    
+    selected_repository_ids = []
+    failed_repositories = []
+    
+    for repo_name in repository_names:
+        repo_name = repo_name.strip()
+        if not repo_name:
+            continue
+            
+        repo_details = repositories.get_repository_details(org, token, repo_name)
+        if repo_details and 'id' in repo_details:
+            selected_repository_ids.append(repo_details['id'])
+            logging.info(f"Found repository '{repo_name}' with ID: {repo_details['id']}")
+        else:
+            failed_repositories.append(repo_name)
+            logging.error(f"Failed to get details for repository '{repo_name}'")
+    
+    if failed_repositories:
+        logging.error(f"Failed to get details for repositories: {', '.join(failed_repositories)}")
+        if not selected_repository_ids:
+            return {
+                "success": False,
+                "successful_count": 0,
+                "failed_count": len(failed_repositories),
+                "failed_repositories": failed_repositories
+            }
+    
+    detach_success = detach_code_security_configuration(
+        org=org,
+        selected_repository_ids=selected_repository_ids,
+        token=token
+    )
+    
+    return {
+        "success": detach_success,
+        "successful_count": len(selected_repository_ids),
+        "failed_count": len(failed_repositories),
+        "failed_repositories": failed_repositories
+    }
 
 
 def get_code_security_configurations(org: str, token: str) -> List[Dict]:

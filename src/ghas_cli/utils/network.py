@@ -89,3 +89,9 @@ def patch(*args, **kwargs):
     response = requests.patch(*args, **kwargs)
     check_response(response)
     return response
+
+
+def delete(*args, **kwargs):
+    response = requests.delete(*args, **kwargs)
+    check_response(response)
+    return response
