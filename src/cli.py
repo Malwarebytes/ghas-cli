@@ -31,8 +31,30 @@ from ghas_cli.utils import (
     roles,
     secrets,
     teams,
+    template_loader,
+    validation,
     vulns,
 )
+
+
+def validate_org_callback(ctx, param, value):
+    """Click callback to validate organization name."""
+    if value:
+        try:
+            return validation.validate_organization_name(value)
+        except validation.ValidationError as e:
+            raise click.BadParameter(str(e))
+    return value
+
+
+def validate_repo_callback(ctx, param, value):
+    """Click callback to validate repository name."""
+    if value:
+        try:
+            return validation.validate_repository_name(value)
+        except validation.ValidationError as e:
+            raise click.BadParameter(str(e))
+    return value
 
 
 def main() -> None:
@@ -281,12 +303,12 @@ def repositories_get_topics(
     show_envvar=True,
 )
 @click.option("-o", "--organization", prompt="Organization name", type=str)
-def repositories_enable_ss(
+def repositories_enable_ss_protection(
     repository: str,
     organization: str,
     token: str,
 ) -> None:
-    """Enable secret scanner on a repository"""
+    """Enable secret scanner push protection on a repository"""
     click.echo(
         repositories.enable_secret_scanner_push_protection(
             organization, token, repository
@@ -1206,14 +1228,10 @@ def mass_deploy(
 
     repos_list = input_repos_list.readlines()
 
-    with open("./templates/secret_scanner.md", "r") as f:
-        template_secretscanner = f.read()
-    with open("./templates/secret_scanner_push_protection.md", "r") as f:
-        template_pushprotection = f.read()
-    with open("./templates/dependabot.md", "r") as f:
-        template_dependabot = f.read()
-    with open("./templates/codeql.md", "r") as f:
-        template_codeql = f.read()
+    template_secretscanner = template_loader.load_template("secret_scanner.md")
+    template_pushprotection = template_loader.load_template("secret_scanner_push_protection.md")
+    template_dependabot = template_loader.load_template("dependabot.md")
+    template_codeql = template_loader.load_template("codeql.md")
 
     logging.info(
         f"Enabling Actions ({actions_enable}), Secret Scanner ({secretscanner}), Push Protection ({pushprotection}), Dependabot ({dependabot}), CodeQL ({codeql}), Dependency Reviewer ({reviewer}) to {len(repos_list)} repositories."

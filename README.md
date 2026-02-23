@@ -2,6 +2,7 @@
 
 [![CodeQL](https://github.com/Malwarebytes/ghas-cli/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/Malwarebytes/ghas-cli/actions/workflows/codeql-analysis.yml)
 [![CI - Ruff](https://github.com/Malwarebytes/ghas-cli/actions/workflows/ruff.yml/badge.svg)](https://github.com/Malwarebytes/ghas-cli/actions/workflows/ruff.yml)
+[![Tests](https://github.com/Malwarebytes/ghas-cli/actions/workflows/pytest.yml/badge.svg)](https://github.com/Malwarebytes/ghas-cli/actions/workflows/pytest.yml)
 [![Downloads](https://static.pepy.tech/personalized-badge/ghas-cli?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/ghas-cli)
 [![Supported Versions](https://img.shields.io/pypi/pyversions/ghas-cli.svg)](https://pypi.org/project/ghas-cli)
 [![Contributors](https://img.shields.io/github/contributors/malwarebytes/ghas-cli.svg)](https://github.com/malwarebytes/ghas-cli/graphs/contributors)
@@ -60,6 +61,12 @@ python -m pip install /full/path/to/ghas-cli-xxx.whl
 
 ```bash
 make dev
+```
+
+### Running Tests
+
+```bash
+uv run --extra dev pytest tests/ -v
 ```
 
 ### Bump the version number

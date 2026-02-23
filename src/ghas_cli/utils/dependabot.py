@@ -75,10 +75,10 @@ def get_dependencies(repository: str, organization: str, token: str, format:str 
         for dep in dependencies.json()["sbom"]["packages"]:
             try:
                 license = dep['licenseConcluded']
-            except:
+            except (KeyError, TypeError):
                 try:
                     license = dep['licenseDeclared']
-                except:
+                except (KeyError, TypeError):
                     license = "Unknown"
 
             deps += f"{repository}, {dep['name']},{dep['versionInfo']}, {license}\n"

@@ -44,15 +44,17 @@ funding = "https://www.malwarebytes.com/"
 
 [project.optional-dependencies]
 dev = [
-    "ruff>=0.11.2"
+    "pytest>=8.0.0",
+    "pytest-github-actions-annotate-failures>=0.2.0",
+    "ruff>=0.11.2",
 ]
 
 [build-system]
 requires = ["uv_build"]
 build-backend = "uv_build"
 
-[tool.uv.build-backend.data]
-data = "templates"
+[tool.uv.build-backend]
+# Templates are now included as package data in ghas_cli.templates
 
 [project.scripts]
 ghas-cli = "cli:main"
@@ -60,3 +62,7 @@ ghas-cli = "cli:main"
 [tool.ruff.lint]
 # isort
 select = ["I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

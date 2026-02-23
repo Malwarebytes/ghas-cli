@@ -9,6 +9,8 @@ import time
 from typing import Any, List
 
 from . import network
+from .template_loader import load_template
+from .validation import validate_organization_name, validate_repository_name
 
 
 class Repository:
@@ -45,7 +47,7 @@ class Repository:
         self.archived: bool = archived
         self.disabled: bool = disabled
         self.updated_at: str = updated_at
-        self.ghas: bool = (ghas,)
+        self.ghas: bool = ghas
         self.secret_scanner: bool = secret_scanner
         self.secret_push_prot: bool = secret_push_prot
         self.dependabot: bool = dependabot
@@ -294,6 +296,8 @@ def check_dependabot_alerts_enabled(
 
 
 def enable_secret_scanner(organization: str, token: str, repository: str) -> bool:
+    validate_organization_name(organization)
+    validate_repository_name(repository)
     headers = network.get_github_headers(token)
 
     payload = {
@@ -320,6 +324,8 @@ def enable_secret_scanner(organization: str, token: str, repository: str) -> boo
 def enable_secret_scanner_push_protection(
     organization: str, token: str, repository: str
 ) -> bool:
+    validate_organization_name(organization)
+    validate_repository_name(repository)
     headers = network.get_github_headers(token)
 
     payload = {
@@ -345,6 +351,8 @@ def enable_secret_scanner_push_protection(
 
 
 def enable_dependabot(organization: str, token: str, repository: str) -> bool:
+    validate_organization_name(organization)
+    validate_repository_name(repository)
     headers = network.get_github_headers(token)
 
     status_alerts = network.put(
@@ -426,23 +434,21 @@ def load_codeql_base64_template(languages: List, branches: List = ["main"]) -> s
     minute = secrets.randbelow(60)
     hour = secrets.randbelow(24)
     day = secrets.randbelow(7)
-    with open("./templates/codeql-analysis-default.yml", "r") as f:
-        data = "".join(f.readlines())
-        data = data.replace(
-            """branches: [ ]""",
-            f"""branches: [{', '.join(f"'{branch}'" for branch in branches)   }]""",
-        )
-        data = data.replace("""language: [ ]""", f"""language: {languages}""")
-        data = data.replace(
-            """cron: '36 4 * * 3'""", f"""cron: '{minute} {hour} * * {day}'"""
-        )
-        return base64.b64encode(data.encode("utf-8")).decode("utf-8")
+    data = load_template("codeql-analysis-default.yml")
+    data = data.replace(
+        """branches: [ ]""",
+        f"""branches: [{', '.join(f"'{branch}'" for branch in branches)   }]""",
+    )
+    data = data.replace("""language: [ ]""", f"""language: {languages}""")
+    data = data.replace(
+        """cron: '36 4 * * 3'""", f"""cron: '{minute} {hour} * * {day}'"""
+    )
+    return base64.b64encode(data.encode("utf-8")).decode("utf-8")
 
 
 def load_codeql_config_base64_template() -> str:
-    with open("./templates/codeql-config-default.yml", "r") as f:
-        template = f.read()
-        return base64.b64encode(template.encode(encoding="utf-8")).decode("utf-8")
+    template = load_template("codeql-config-default.yml")
+    return base64.b64encode(template.encode(encoding="utf-8")).decode("utf-8")
 
 
 def create_branch(
@@ -498,6 +504,8 @@ def create_codeql_pr(
     3. Push a .github/workflows/codeql-analysis.yml to the repository on that branch
     3. Create an associated PR
     """
+    validate_organization_name(organization)
+    validate_repository_name(repository)
     headers = network.get_github_headers(token)
 
     # Get the default branch
@@ -615,7 +623,7 @@ def create_codeql_pr(
         i += 1
 
     if pr_resp.status_code != 201:
-        print(pr_resp.json())
+        logging.error(f"Failed to create PR: {pr_resp.json()}")
         return False
 
     return True
@@ -625,9 +633,7 @@ def create_codeql_pr(
 
 
 def load_dependency_review_base64_template() -> str:
-    with open("./templates/dependency_enforcement.yml", "r") as f:
-        template = f.read()
-
+    template = load_template("dependency_enforcement.yml")
     return str(base64.b64encode(template.encode(encoding="utf-8")), "utf-8")
 
 
@@ -642,6 +648,8 @@ def create_dependency_enforcement_pr(
     3. Push a .github/workflows/dependency_enforcement.yml to the repository on that branch
     3. Create an associated PR
     """
+    validate_organization_name(organization)
+    validate_repository_name(repository)
     headers = network.get_github_headers(token)
 
     # Get the default branch
