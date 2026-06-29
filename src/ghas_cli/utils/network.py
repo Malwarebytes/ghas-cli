@@ -57,7 +57,7 @@ def check_unauthorized(response: Any):
     return True
 
 
-def check_response(response: any):
+def check_response(response: Any):
     check_rate_limit(response)
     check_unauthorized(response)
 

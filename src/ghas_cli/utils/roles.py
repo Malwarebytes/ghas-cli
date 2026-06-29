@@ -24,7 +24,7 @@ def create_role(
     }
 
     role_resp = requests.post(
-        url=f"https://api.github.com/orgs/{organization}/custom_roles",
+        url=f"https://api.github.com/orgs/{org}/custom_roles",
         headers=headers,
         json=payload,
     )
