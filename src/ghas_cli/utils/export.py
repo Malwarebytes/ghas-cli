@@ -3,6 +3,7 @@
 
 import json
 import logging
+from typing import Dict
 
 
 def output_to_csv(alerts_per_repos: Dict, location: str) -> bool:
