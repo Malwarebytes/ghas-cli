@@ -6,7 +6,7 @@ authors = [{name="jboursier", email="jboursier@malwarebytes.com"}]
 license = "MIT"
 readme = "README.md"
 keywords = ["security", "cli", "github", "utility"]
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -26,11 +26,11 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "click>=8.1.8",
-    "configparser>=7.1.0",
+    "click>=8.5.0",
+    "configparser>=7.3.0",
     "python-magic>=0.4.27",
-    "requests>=2.32.3",
-    "urllib3>=2.2.3",
+    "requests>=2.34.2",
+    "urllib3>=2.8.0",
 ]
 
 [project.urls]
@@ -44,9 +44,9 @@ funding = "https://www.malwarebytes.com/"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-github-actions-annotate-failures>=0.2.0",
-    "ruff>=0.11.2",
+    "pytest>=9.1.1",
+    "pytest-github-actions-annotate-failures>=0.4.2",
+    "ruff>=0.17.2",
 ]
 
 [build-system]
