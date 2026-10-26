@@ -1,6 +1,6 @@
 [project]
 name = "ghas-cli"
-version = "1.7.3"
+version = "1.8.0"
 description = "Command line interface to interact with GitHub Advanced Security."
 authors = [{name="jboursier", email="jboursier@malwarebytes.com"}]
 license = "MIT"
