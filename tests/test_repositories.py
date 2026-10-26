@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Tests for the repositories module."""
 
-import pytest
 
 from ghas_cli.utils.repositories import Repository
 
